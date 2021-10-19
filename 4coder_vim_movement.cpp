@@ -362,11 +362,12 @@ function i64 vim_bounce_pair(Application_Links *app, View_ID view, Buffer_ID buf
 	i64 max_pos = buffer_get_size(app, buffer);
 	i32 stack_count = 0;
 
-	pos += direction;
+	i64 prev_pos = pos;
+   pos += direction;
 	while(close != (track = buffer_get_char(app, buffer, pos)) || stack_count != 0){
 		if(track == first){ stack_count++; }
 		if(track == close){ stack_count--; }
-		if(pos == max_pos || pos == 0){ return pos; }
+      if(pos <= 0 || max_pos <= pos){ return prev_pos; }
 		pos += direction;
 	}
 	return pos;
