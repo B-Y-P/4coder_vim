@@ -44,8 +44,8 @@ CUSTOM_DOC("Input consumption loop for vim behavior")
 			continue;
 		}
 
-		vim_keystroke_text.size = 0;
 		if(!(event_properties & EventPropertyGroup_AnyMouseEvent) && input.event.kind != InputEventKind_None){
+         vim_keystroke_text.size = 0;
 			vim_cursor_blink = 0;
 		}
 
