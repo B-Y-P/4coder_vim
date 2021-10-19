@@ -53,19 +53,23 @@ function void vim_set_prev_visual(Application_Links *app, View_ID view){
 	Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 	Vim_Prev_Visual *prev_visual = scope_attachment(app, scope, vim_buffer_prev_visual, Vim_Prev_Visual);
 
-	prev_visual->cursor_pos = view_get_cursor_pos(app, view);
-	prev_visual->mark_pos = view_get_mark_pos(app, view);
-	prev_visual->edit_type = vim_state.params.edit_type;
+   if(prev_visual){
+      prev_visual->cursor_pos = view_get_cursor_pos(app, view);
+      prev_visual->mark_pos = view_get_mark_pos(app, view);
+      prev_visual->edit_type = vim_state.params.edit_type;
+   }
 }
 
 function void vim_push_jump(Application_Links *app, View_ID view){
 	Managed_Scope scope = view_get_managed_scope(app, view);
 	Vim_Jump_List *jump_list = scope_attachment(app, scope, vim_view_jumps, Vim_Jump_List);
-	jump_list->index = jump_list->top = ArrayInc(jump_list->markers, jump_list->index);
-	if(jump_list->index == jump_list->bot){ jump_list->bot++; }
-	Point_Stack_Slot *slot = &jump_list->markers[jump_list->index];
-	slot->buffer = view_get_buffer(app, view, Access_ReadVisible);
-	slot->object = view_get_cursor_pos(app, view);
+   if(jump_list){
+      jump_list->index = jump_list->top = ArrayInc(jump_list->markers, jump_list->index);
+      if(jump_list->index == jump_list->bot){ jump_list->bot++; }
+      Point_Stack_Slot *slot = &jump_list->markers[jump_list->index];
+      slot->buffer = view_get_buffer(app, view, Access_ReadVisible);
+      slot->object = view_get_cursor_pos(app, view);
+   }
 }
 
 function void vim_set_jump(Application_Links *app, View_ID view, Vim_Jump_List *jump_list, i32 index){
@@ -79,15 +83,19 @@ function void vim_set_jump(Application_Links *app, View_ID view, Vim_Jump_List *
 function void vim_dec_jump(Application_Links *app, View_ID view){
 	Managed_Scope scope = view_get_managed_scope(app, view);
 	Vim_Jump_List *jump_list = scope_attachment(app, scope, vim_view_jumps, Vim_Jump_List);
-	if(jump_list->index == jump_list->bot){ return; }
-	vim_set_jump(app, view, jump_list, ArrayDec(jump_list->markers, jump_list->index));
+   if(jump_list){
+      if(jump_list->index == jump_list->bot){ return; }
+      vim_set_jump(app, view, jump_list, ArrayDec(jump_list->markers, jump_list->index));
+   }
 }
 
 function void vim_inc_jump(Application_Links *app, View_ID view){
 	Managed_Scope scope = view_get_managed_scope(app, view);
 	Vim_Jump_List *jump_list = scope_attachment(app, scope, vim_view_jumps, Vim_Jump_List);
-	if(jump_list->index == jump_list->top){ return; }
-	vim_set_jump(app, view, jump_list, ArrayInc(jump_list->markers, jump_list->index));
+   if(jump_list){
+      if(jump_list->index == jump_list->top){ return; }
+      vim_set_jump(app, view, jump_list, ArrayInc(jump_list->markers, jump_list->index));
+   }
 }
 
 VIM_COMMAND_SIG(vim_prev_jump){ vim_dec_jump(app, get_active_view(app, Access_ReadVisible)); }
@@ -175,9 +183,9 @@ vim_visual_insert_inner(Application_Links *app, View_ID view, Buffer_ID buffer){
 	vim_history_group = history_group_begin(app, buffer);
 
 	// NOTE: For Visual Block multi-line responsiveness, temporarily turn off virtual whitespace and line wrapping
-	Managed_Scope scope = buffer_get_managed_scope(app, view);
+	Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 	b32 *wrap_lines_ptr = scope_attachment(app, scope, buffer_wrap_lines, b32);
-	if(*wrap_lines_ptr){
+	if(wrap_lines_ptr && *wrap_lines_ptr){
 		toggle_line_wrap(app);
 		vim_visual_insert_flags |= bit_1;
 	}

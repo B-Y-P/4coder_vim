@@ -381,7 +381,7 @@ function i64 vim_scan_bounce(Application_Links *app, View_ID view, Scan_Directio
 	u8 track;
 	while(!vim_character_can_bounce(track = buffer_get_char(app, buffer, pos))){
 		pos += direction;
-		if(pos >= max_pos || pos <= 0){ return cursor_pos; }
+		if(pos <= 0 || max_pos <= pos){ return cursor_pos; }
 	}
 
 	return vim_bounce_pair(app, view, buffer, pos, track);

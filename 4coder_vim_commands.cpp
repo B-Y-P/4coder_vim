@@ -160,7 +160,7 @@ VIM_COMMAND_SIG(vim_prev_visual){
 	Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 
 	Vim_Prev_Visual *prev_visual = scope_attachment(app, scope, vim_buffer_prev_visual, Vim_Prev_Visual);
-	if(prev_visual->cursor_pos != 0 && prev_visual->mark_pos != 0){
+	if(prev_visual && prev_visual->cursor_pos != 0 && prev_visual->mark_pos != 0){
 		view_set_cursor_and_preferred_x(app, view, seek_pos(prev_visual->cursor_pos));
 		view_set_mark(app, view, seek_pos(prev_visual->mark_pos));
 		vim_state.params.edit_type = prev_visual->edit_type;
@@ -609,8 +609,10 @@ CONSUME_NEXT_KEYSTROKE_SIG(vim_set_mark_consume){
 	if(in_range('a', character, 'z'+1)){
 		Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 		i64 *marks = (i64 *)managed_scope_get_attachment(app, scope, vim_buffer_marks, 26*sizeof(i64));
-		marks[character-'a'] = pos;
-		vim_set_bottom_text(push_stringf(scratch, "Mark %c set", character));
+      if(marks){
+         marks[character-'a'] = pos;
+         vim_set_bottom_text(push_stringf(scratch, "Mark %c set", character));
+      }
 	}
 	else if(in_range('A', character, 'Z'+1)){
 		vim_global_marks[character-'A'] = {buffer_identifier(buffer), pos};
@@ -625,15 +627,17 @@ CONSUME_NEXT_KEYSTROKE_SIG(vim_goto_mark_consume){
 	if(in_range('a', c, 'z'+1)){
 		Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 		i64 *marks = (i64 *)managed_scope_get_attachment(app, scope, vim_buffer_marks, 26*sizeof(i64));
-		i64 pos = marks[c-'a'];
-		if(pos > 0){
-			vim_push_jump(app, view);
-			Vim_Motion_Block vim_motion_block(app);
-			view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
-		}else{
-			Scratch_Block scratch(app);
-			vim_set_bottom_text(push_stringf(scratch, "Mark %c not set", c));
-		}
+      if(marks){
+         i64 pos = marks[c-'a'];
+         if(pos > 0){
+            vim_push_jump(app, view);
+            Vim_Motion_Block vim_motion_block(app);
+            view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
+         }else{
+            Scratch_Block scratch(app);
+            vim_set_bottom_text(push_stringf(scratch, "Mark %c not set", c));
+         }
+      }
 	}
 	else if(in_range('A', c, 'Z'+1)){
 		vim_push_jump(app, view);
