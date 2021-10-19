@@ -376,7 +376,8 @@ function i64 vim_scan_bounce(Application_Links *app, View_ID view, Scan_Directio
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	i64 max_pos = buffer_get_size(app, buffer);
 	i64 cursor_pos = view_get_cursor_pos(app, view);
-	i64 pos = cursor_pos - (buffer_get_char(app, buffer, cursor_pos) == '\n');
+   u8 c = buffer_get_char(app, buffer, cursor_pos);
+	i64 pos = cursor_pos - (c == '\n' || c == '\r');
 	u8 track;
 	while(!vim_character_can_bounce(track = buffer_get_char(app, buffer, pos))){
 		pos += direction;

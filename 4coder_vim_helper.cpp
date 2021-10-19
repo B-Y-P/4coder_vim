@@ -14,10 +14,8 @@ function void vim_enter_insert_mode(Application_Links *app){
 }
 
 function void vim_clamp_newline(Application_Links *app, View_ID view, Buffer_ID buffer, i64 cursor_pos){
-	if(cursor_pos == get_line_side_pos_from_pos(app, buffer, cursor_pos, Side_Max) &&
-	   !line_is_blank(app, buffer, get_line_number_from_pos(app, buffer, cursor_pos))){
-		move_left(app);
-	}
+   u8 c = buffer_get_char(app, buffer, cursor_pos);
+	if(c == '\r' || c == '\n'){ move_left(app); }
 }
 
 function u8 character_toggle_case(u8 c){
