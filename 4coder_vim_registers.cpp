@@ -207,7 +207,8 @@ vim_set_insert_register(Application_Links *app){
 		else if(record.kind == RecordKind_Group){
 			foreach(i, record.group_count){
 				Record_Info sub_record = buffer_history_get_group_sub_record(app, buffer, index, i);
-				vim_process_insert_record(app, sub_record, &prev_pos);
+            if(sub_record.error != RecordError_NoError){ continue; }
+            vim_process_insert_record(app, sub_record, &prev_pos);
 			}
 		}
 	}
