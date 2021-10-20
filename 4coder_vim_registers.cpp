@@ -181,7 +181,7 @@ vim_process_insert_record(Application_Links *app, Record_Info record, i64 *prev_
 		text->size = 0;
 	}
 	*prev_pos = *prev_pos  - record.single_string_backward.size + record.single_string_forward.size;
-	text->size = Max(0, text->size - record.single_string_backward.size);
+	text->size = Max(0, i64(text->size) - i64(record.single_string_backward.size));
    u64 next_size = u64(text->size + record.single_string_forward.size);
    if(next_size >= text->cap){ vim_realloc_string(text, next_size); }
 	string_append(text, record.single_string_forward);
