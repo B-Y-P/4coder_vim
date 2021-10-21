@@ -139,7 +139,7 @@ Vim_Motion_Block::~Vim_Motion_Block(){
 
 		if(params->edit_type == EDIT_LineWise){
 			range = range_union(get_line_range_from_pos(app, buffer, begin_pos),
-								get_line_range_from_pos(app, buffer, end_pos));
+                             get_line_range_from_pos(app, buffer, end_pos));
 			if(++range.max >= buffer_size){
 				range.max = buffer_size;
 				range.min = Max(0, range.min-1);
@@ -194,7 +194,8 @@ vim_visual_insert_inner(Application_Links *app, View_ID view, Buffer_ID buffer){
 		vim_visual_insert_flags |= bit_2;
 	}
 
-	vim_state.mode = VIM_Visual_Insert;
+	//vim_enter_insert_mode(app);
+   vim_state.mode = VIM_Visual_Insert;
 }
 
 VIM_COMMAND_SIG(vim_up){
