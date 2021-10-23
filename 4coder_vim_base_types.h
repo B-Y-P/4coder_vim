@@ -10,8 +10,8 @@
 typedef void Vim_Apply_Request(Application_Links *app, View_ID view, Buffer_ID buffer, Range_i64 range);
 
 // NOTE(BYP): Used in vim_text_object_vtable
-#define VIM_TEXT_OBJECT_SIG(name) Range_i64 name(Application_Links *app, View_ID view, Buffer_ID buffer, i64 cursor_pos)
-typedef Range_i64 Vim_Text_Object_Func(Application_Links *app, View_ID view, Buffer_ID buffer, i64 cursor_pos);
+#define VIM_TEXT_OBJECT_SIG(name) Range_i64 name(Application_Links *app, Buffer_ID buffer, i64 cursor_pos)
+typedef Range_i64 Vim_Text_Object_Func(Application_Links *app, Buffer_ID buffer, i64 cursor_pos);
 
 // NOTE: Same as CUSTOM_COMMAND_SIG but won't clutter command lister
 #define VIM_COMMAND_SIG(name) function void name(Application_Links *app)

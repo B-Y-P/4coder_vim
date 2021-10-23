@@ -478,7 +478,7 @@ VIM_TEXT_OBJECT_SIG(vim_scan_object_quotes){
 					break;
 				}
 			}
-			if(line_range.min){
+			if(range.min){
 				range.max = line_range.max;
 				for(i64 i=range.min+1; i<line_range.max; i++){
 					if(character == line_text[i-s]){
@@ -513,7 +513,7 @@ CONSUME_NEXT_KEYSTROKE_SIG(vim_text_object_consume){
 	foreach(i, ArrayCount(vim_text_object_vtable)){
 		Vim_Text_Object *text_object = vim_text_object_vtable + i;
 		if(character == text_object->character){
-			range = text_object->func(app, view, buffer, cursor_pos);
+			range = text_object->func(app, buffer, cursor_pos);
 			did_range = true;
 			break;
 		}
@@ -541,7 +541,7 @@ CONSUME_NEXT_KEYSTROKE_SIG(vim_text_object_consume){
 
 		/// Quote objects
 		else if(character == '"' || character == '\''){
-			range = vim_scan_object_quotes(app, view, buffer, cursor_pos);
+			range = vim_scan_object_quotes(app, buffer, cursor_pos);
 		}
 	}
 

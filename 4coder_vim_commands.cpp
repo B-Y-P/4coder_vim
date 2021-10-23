@@ -131,14 +131,14 @@ VIM_COMMAND_SIG(vim_modal_a){
 
 VIM_COMMAND_SIG(vim_newline_below){
 	vim_insert_end(app);
-    vim_state.insert_index++;
+   vim_state.insert_index++;
 	write_text(app, string_u8_litexpr("\n"));
 }
 
 VIM_COMMAND_SIG(vim_newline_above){
-    vim_insert_begin(app);
-    vim_state.insert_index++;
-    write_text(app, string_u8_litexpr("\n"));
+   vim_insert_begin(app);
+   vim_state.insert_index++;
+   write_text(app, string_u8_litexpr("\n"));
 	move_vertical_lines(app, -1);
 }
 
@@ -367,16 +367,16 @@ VIM_COMMAND_SIG(vim_forward_word){
 	Vim_Motion_Block vim_motion_block(app);
 	vim_state.params.clusivity = VIM_Exclusive;
 	View_ID view = get_active_view(app, Access_ReadVisible);
-    i64 prev_pos = -1;
+   i64 prev_pos = -1;
 	i64 pos = vim_scan_word(app, view, Scan_Forward, &prev_pos, vim_consume_number());
 	view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
-    if(prev_pos != pos){
-        Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
-        i64 line0 = get_line_number_from_pos(app, buffer, prev_pos);
-        i64 line1 = get_line_number_from_pos(app, buffer, pos);
-        if(line0 != line1){
-            vim_motion_block.clamp_end = get_line_side_pos(app, buffer, line0, Side_Max);
-        }
+   if(prev_pos != pos){
+      Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+      i64 line0 = get_line_number_from_pos(app, buffer, prev_pos);
+      i64 line1 = get_line_number_from_pos(app, buffer, pos);
+      if(line0 != line1){
+         vim_motion_block.clamp_end = get_line_side_pos(app, buffer, line0, Side_Max);
+      }
    }
 }
 
@@ -446,10 +446,10 @@ VIM_COMMAND_SIG(vim_bounce){
 	Scan_Direction direction = Scan_Forward;
 	Input_Event event = get_current_input(app).event;
 	if(event.kind == InputEventKind_KeyStroke && has_modifier(&event, KeyCode_Control)){ direction=Scan_Backward; }
-    View_ID view = get_active_view(app, Access_ReadVisible);
-    Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+   View_ID view = get_active_view(app, Access_ReadVisible);
+   Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	i64 pos = view_get_cursor_pos(app, view);
-    pos = vim_scan_bounce(app, buffer, pos, direction);
+   pos = vim_scan_bounce(app, buffer, pos, direction);
 	view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
 }
 
@@ -700,7 +700,7 @@ VIM_COMMAND_SIG(vim_open_file_in_quotes){
 
 		vim_state.params.consume_char = '"';
 		vim_state.params.clusivity = VIM_Inclusive;
-		Range_i64 range = vim_scan_object_quotes(app, view, buffer, pos);
+		Range_i64 range = vim_scan_object_quotes(app, buffer, pos);
 		range.min++;
 		String_Const_u8 quoted_name = push_buffer_range(app, scratch, buffer, range);
 
