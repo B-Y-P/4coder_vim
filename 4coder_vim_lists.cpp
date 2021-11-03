@@ -331,6 +331,7 @@ function void vim_jump_navigate(Application_Links *app, View_ID view, Lister *li
 	center_view(app);
 }
 
+// TODO(BYP): Jump lister crashed on many entries
 CUSTOM_UI_COMMAND_SIG(vim_jump_lister)
 CUSTOM_DOC("Opens an interactive lists of the views jumps")
 {

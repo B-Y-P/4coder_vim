@@ -115,7 +115,7 @@ struct Vim_State{
 	Vim_Mode mode;
 	Vim_Sub_Mode sub_mode;
 
-	Arena arena;
+   Arena arena;
 	Heap heap;
 	Base_Allocator alloc;
 

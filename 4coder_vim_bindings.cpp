@@ -167,8 +167,8 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	/// Screen Adjust Binds
 	VimBind(N|V|MAP, vim_half_page_up,                (Ctl|KeyCode_U));
 	VimBind(N|V|MAP, vim_half_page_down,              (Ctl|KeyCode_D));
-	VimBind(N|V|MAP, vim_whole_page_down,             (Ctl|KeyCode_F));
 	VimBind(N|V|MAP, vim_whole_page_up,               (Ctl|KeyCode_B));
+	VimBind(N|V|MAP, vim_whole_page_down,             (Ctl|KeyCode_F));
 	VimBind(N|V|MAP, vim_line_down,               (Ctl|Sft|KeyCode_Y));
 	VimBind(N|V|MAP, vim_line_up,                 (Ctl|Sft|KeyCode_E));
 	VimBind(N|V|MAP, vim_scroll_screen_top,         SUB_Z, KeyCode_T);

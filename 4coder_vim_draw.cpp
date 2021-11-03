@@ -59,7 +59,7 @@ vim_draw_visual_mode(Application_Links *app, View_ID view, Buffer_ID buffer, Fac
 			if((virtual_enabled && is_code) && character_is_whitespace(buffer_get_char(app, buffer, range.min))){
 				//range.min = get_pos_past_lead_whitespace(app, buffer, range.min);
 				i64 line_end = get_line_end_pos(app, buffer, get_line_number_from_pos(app, buffer, range.min));
-            line_end -= (line_end > 0 && buffer_get_char(app, buffer, line_end) == '\n' && buffer_get_char(app, buffer, line_end-1) == '\r');
+				line_end -= (line_end > 0 && buffer_get_char(app, buffer, line_end) == '\n' && buffer_get_char(app, buffer, line_end-1) == '\r');
 				i64 non_ws = buffer_seek_character_class_change_1_0(app, buffer, &character_predicate_whitespace, Scan_Forward, range.min);
 				range.min = Min(line_end, non_ws);
 			}
@@ -198,7 +198,8 @@ vim_draw_cursor(Application_Links *app, View_ID view, b32 is_active_view, Buffer
 
 			if(ACTIVE_BLINK(vim_cursor_blink) && vim_state.params.consume_next_key != vim_select_register_consume){
 				if(vim_state.mode == VIM_Insert){ rect = rect_split_top_bottom_neg(rect, 5.f).b; }
-				if(rect.p1 != V2f32(0,0)){
+            //if(vim_state.mode == VIM_Insert){ rect = rect_split_left_right(rect, 2.f).a; }
+            if(rect.p1 != V2f32(0,0)){
 					vim_nxt_cursor_pos = rect.p1;
 				}
 

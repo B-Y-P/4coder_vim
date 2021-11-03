@@ -204,10 +204,12 @@ vim_tick(Application_Links *app, Frame_Info frame_info){
 
 	vim_animate_filebar(app, frame_info);
 	vim_animate_cursor(app, frame_info);
+#if VIM_DO_ANIMATE
 	vim_cursor_blink++;
+#endif
 
 	b32 enable_virtual_whitespace = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
-	if (enable_virtual_whitespace != def_enable_virtual_whitespace){
+	if(enable_virtual_whitespace != def_enable_virtual_whitespace){
 		def_enable_virtual_whitespace = enable_virtual_whitespace;
 		clear_all_layouts(app);
 	}

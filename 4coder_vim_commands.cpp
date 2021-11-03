@@ -1,4 +1,5 @@
 
+
 CUSTOM_COMMAND_SIG(vim_toggle_relative_line_num)
 CUSTOM_DOC("Toggles relative line numbers")
 { vim_relative_numbers ^= 1; }
@@ -131,14 +132,14 @@ VIM_COMMAND_SIG(vim_modal_a){
 
 VIM_COMMAND_SIG(vim_newline_below){
 	vim_insert_end(app);
-   vim_state.insert_index++;
+	vim_state.insert_index++;
 	write_text(app, string_u8_litexpr("\n"));
 }
 
 VIM_COMMAND_SIG(vim_newline_above){
-   vim_insert_begin(app);
-   vim_state.insert_index++;
-   write_text(app, string_u8_litexpr("\n"));
+	vim_insert_begin(app);
+	vim_state.insert_index++;
+	write_text(app, string_u8_litexpr("\n"));
 	move_vertical_lines(app, -1);
 }
 
@@ -367,17 +368,17 @@ VIM_COMMAND_SIG(vim_forward_word){
 	Vim_Motion_Block vim_motion_block(app);
 	vim_state.params.clusivity = VIM_Exclusive;
 	View_ID view = get_active_view(app, Access_ReadVisible);
-   i64 prev_pos = -1;
+	i64 prev_pos = -1;
 	i64 pos = vim_scan_word(app, view, Scan_Forward, &prev_pos, vim_consume_number());
 	view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
-   if(prev_pos != pos){
-      Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
-      i64 line0 = get_line_number_from_pos(app, buffer, prev_pos);
-      i64 line1 = get_line_number_from_pos(app, buffer, pos);
-      if(line0 != line1){
-         vim_motion_block.clamp_end = get_line_side_pos(app, buffer, line0, Side_Max);
-      }
-   }
+	if(prev_pos != pos){
+		Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+		i64 line0 = get_line_number_from_pos(app, buffer, prev_pos);
+		i64 line1 = get_line_number_from_pos(app, buffer, pos);
+		if(line0 != line1){
+			vim_motion_block.clamp_end = get_line_side_pos(app, buffer, line0, Side_Max);
+		}
+	}
 }
 
 VIM_COMMAND_SIG(vim_backward_word){
@@ -388,20 +389,20 @@ VIM_COMMAND_SIG(vim_backward_word){
 }
 
 VIM_COMMAND_SIG(vim_forward_WORD){
-   Vim_Motion_Block vim_motion_block(app);
-   vim_state.params.clusivity = VIM_Exclusive;
-   View_ID view = get_active_view(app, Access_ReadVisible);
-   i64 prev_pos = -1;
-   i64 pos = vim_scan_WORD(app, view, Scan_Forward, &prev_pos, vim_consume_number());
-   view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
-   if(prev_pos != pos){
-      Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
-      i64 line0 = get_line_number_from_pos(app, buffer, prev_pos);
-      i64 line1 = get_line_number_from_pos(app, buffer, pos);
-      if(line0 != line1){
-         vim_motion_block.clamp_end = get_line_side_pos(app, buffer, line0, Side_Max);
-      }
-   }
+	Vim_Motion_Block vim_motion_block(app);
+	vim_state.params.clusivity = VIM_Exclusive;
+	View_ID view = get_active_view(app, Access_ReadVisible);
+	i64 prev_pos = -1;
+	i64 pos = vim_scan_WORD(app, view, Scan_Forward, &prev_pos, vim_consume_number());
+	view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
+	if(prev_pos != pos){
+		Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+		i64 line0 = get_line_number_from_pos(app, buffer, prev_pos);
+		i64 line1 = get_line_number_from_pos(app, buffer, pos);
+		if(line0 != line1){
+			vim_motion_block.clamp_end = get_line_side_pos(app, buffer, line0, Side_Max);
+		}
+	}
 }
 
 VIM_COMMAND_SIG(vim_backward_WORD){
@@ -446,10 +447,10 @@ VIM_COMMAND_SIG(vim_bounce){
 	Scan_Direction direction = Scan_Forward;
 	Input_Event event = get_current_input(app).event;
 	if(event.kind == InputEventKind_KeyStroke && has_modifier(&event, KeyCode_Control)){ direction=Scan_Backward; }
-   View_ID view = get_active_view(app, Access_ReadVisible);
-   Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+	View_ID view = get_active_view(app, Access_ReadVisible);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	i64 pos = view_get_cursor_pos(app, view);
-   pos = vim_scan_bounce(app, buffer, pos, direction);
+	pos = vim_scan_bounce(app, buffer, pos, direction);
 	view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
 }
 
@@ -613,10 +614,10 @@ CONSUME_NEXT_KEYSTROKE_SIG(vim_set_mark_consume){
 	if(in_range('a', character, 'z'+1)){
 		Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 		i64 *marks = (i64 *)managed_scope_get_attachment(app, scope, vim_buffer_marks, 26*sizeof(i64));
-      if(marks){
-         marks[character-'a'] = pos;
-         vim_set_bottom_text(push_stringf(scratch, "Mark %c set", character));
-      }
+		if(marks){
+			marks[character-'a'] = pos;
+			vim_set_bottom_text(push_stringf(scratch, "Mark %c set", character));
+		}
 	}
 	else if(in_range('A', character, 'Z'+1)){
 		vim_global_marks[character-'A'] = {buffer_identifier(buffer), pos};
@@ -631,17 +632,17 @@ CONSUME_NEXT_KEYSTROKE_SIG(vim_goto_mark_consume){
 	if(in_range('a', c, 'z'+1)){
 		Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 		i64 *marks = (i64 *)managed_scope_get_attachment(app, scope, vim_buffer_marks, 26*sizeof(i64));
-      if(marks){
-         i64 pos = marks[c-'a'];
-         if(pos > 0){
-            vim_push_jump(app, view);
-            Vim_Motion_Block vim_motion_block(app);
-            view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
-         }else{
-            Scratch_Block scratch(app);
-            vim_set_bottom_text(push_stringf(scratch, "Mark %c not set", c));
-         }
-      }
+		if(marks){
+			i64 pos = marks[c-'a'];
+			if(pos > 0){
+				vim_push_jump(app, view);
+				Vim_Motion_Block vim_motion_block(app);
+				view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
+			}else{
+				Scratch_Block scratch(app);
+				vim_set_bottom_text(push_stringf(scratch, "Mark %c not set", c));
+			}
+		}
 	}
 	else if(in_range('A', c, 'Z'+1)){
 		vim_push_jump(app, view);
