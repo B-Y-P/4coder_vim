@@ -321,7 +321,9 @@ VIM_COMMAND_SIG(vim_modal_0){
 VIM_COMMAND_SIG(vim_paragraph_up){
 	vim_push_jump(app, get_active_view(app, Access_ReadVisible));
 	Vim_Motion_Block vim_motion_block(app);
-	const i32 N = vim_consume_number();
+   vim_state.params.edit_type = EDIT_LineWise;
+   vim_state.params.clusivity = VIM_Exclusive;
+   const i32 N = vim_consume_number();
 	foreach(i,N)
 		move_up_to_blank_line_end(app);
 }
@@ -329,7 +331,9 @@ VIM_COMMAND_SIG(vim_paragraph_up){
 VIM_COMMAND_SIG(vim_paragraph_down){
 	vim_push_jump(app, get_active_view(app, Access_ReadVisible));
 	Vim_Motion_Block vim_motion_block(app);
-	const i32 N = vim_consume_number();
+   vim_state.params.edit_type = EDIT_LineWise;
+   vim_state.params.clusivity = VIM_Exclusive;
+   const i32 N = vim_consume_number();
 	foreach(i,N)
 		move_down_to_blank_line_end(app);
 }
@@ -471,7 +475,6 @@ VIM_COMMAND_SIG(vim_paste_after){
 		}else{
 			move_right(app);
 			vim_paste(app, view, buffer, vim_state.params.selected_reg);
-			move_left(app);
 		}
 
 		Vim_Register *reg = vim_state.prev_params.selected_reg;

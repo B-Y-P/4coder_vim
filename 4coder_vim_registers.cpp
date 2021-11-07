@@ -109,14 +109,20 @@ vim_copy(Application_Links *app, View_ID view, Buffer_ID buffer, Range_i64 range
 function void
 vim_paste(Application_Links *app, View_ID view, Buffer_ID buffer, Vim_Register *reg){
 	if(reg->edit_type == EDIT_Block){ vim_block_paste(app, view, buffer, reg); return; }
-	i64 pos = view_get_cursor_pos(app, view);
+
+   i64 pos = view_get_cursor_pos(app, view);
 	if(reg == &vim_registers.system){
-		Managed_Scope scope = view_get_managed_scope(app, view);
-		i32 *paste_index = scope_attachment(app, scope, view_paste_index_loc, i32);
-		if(paste_index){
-			Scratch_Block scratch(app);
-			vim_register_copy(reg, push_clipboard_index(app, scratch, 0, *paste_index=0));
-		}
+      clipboard_update_history_from_system(app, 0);
+      i32 count = clipboard_count(0);
+      if(count > 0){
+         Managed_Scope scope = view_get_managed_scope(app, view);
+         i32 *paste_index = scope_attachment(app, scope, view_paste_index_loc, i32);
+         if(paste_index){
+            Scratch_Block scratch(app);
+            vim_register_copy(reg, push_clipboard_index(app, scratch, 0, *paste_index=0));
+            vim_update_registers(app);
+         }
+      }
 	}
 	buffer_replace_range(app, buffer, Ii64(pos), reg->data.string);
 	view_set_mark(app, view, seek_pos(pos));
