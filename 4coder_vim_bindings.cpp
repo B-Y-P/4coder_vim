@@ -27,7 +27,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 #define MAP 0
 	u32 Ctl = KeyMod_Ctl;
 	u32 Sft = KeyMod_Sft;
-	//u32 Alt = KeyMod_Alt;
+	u32 Alt = KeyMod_Alt;
 
 	VimBind(MAP, vim_normal_mode,                          KeyCode_Escape);
 	VimBind(MAP, vim_inc_buffer_peek,                 (Ctl|KeyCode_RightBracket));
@@ -46,6 +46,12 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|MAP, vim_open_file_in_quotes,         SUB_G, KeyCode_F);
 	VimBind(N|MAP, vim_interactive_open_or_new,   (Ctl|Sft|KeyCode_O));
 	VimBind(N|MAP, quick_swap_buffer,             (Sft|Ctl|KeyCode_6));
+	VimBind(N|MAP, vim_goto_definition,               (Ctl|KeyCode_W));
+	VimBind(N|MAP, vim_next_4coder_jump,              (Alt|KeyCode_N));
+	VimBind(N|MAP, vim_prev_4coder_jump,          (Sft|Alt|KeyCode_N));
+	VimBind(N|MAP, vim_first_4coder_jump,         (Sft|Alt|KeyCode_M));
+	VimBind(N|I|MAP, view_buffer_other_panel,         (Ctl|KeyCode_1));
+	VimBind(N|I|MAP, swap_panels,                     (Ctl|KeyCode_2));
 	VimBind(I|MAP, word_complete_drop_down,           (Ctl|KeyCode_N));
 	//VimBind(I|MAP, word_complete_drop_down,           (Ctl|KeyCode_P));
 
@@ -161,6 +167,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|MAP, vim_in_prev_pattern,        SUB_G, (Sft|KeyCode_N));
 
 	VimBind(N|MAP, vim_prev_jump,                     (Ctl|KeyCode_O));
+	VimBind(N|MAP, vim_next_jump,                     (Ctl|KeyCode_I));
 	VimBind(N|MAP, vim_next_jump,                     (Sft|KeyCode_I));
 	VimBind(N|MAP, vim_next_jump,                 (Ctl|Sft|KeyCode_I));
 

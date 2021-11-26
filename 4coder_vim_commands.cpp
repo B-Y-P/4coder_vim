@@ -321,9 +321,9 @@ VIM_COMMAND_SIG(vim_modal_0){
 VIM_COMMAND_SIG(vim_paragraph_up){
 	vim_push_jump(app, get_active_view(app, Access_ReadVisible));
 	Vim_Motion_Block vim_motion_block(app);
-   vim_state.params.edit_type = EDIT_LineWise;
-   vim_state.params.clusivity = VIM_Exclusive;
-   const i32 N = vim_consume_number();
+	vim_state.params.edit_type = EDIT_LineWise;
+	vim_state.params.clusivity = VIM_Exclusive;
+	const i32 N = vim_consume_number();
 	foreach(i,N)
 		move_up_to_blank_line_end(app);
 }
@@ -331,9 +331,9 @@ VIM_COMMAND_SIG(vim_paragraph_up){
 VIM_COMMAND_SIG(vim_paragraph_down){
 	vim_push_jump(app, get_active_view(app, Access_ReadVisible));
 	Vim_Motion_Block vim_motion_block(app);
-   vim_state.params.edit_type = EDIT_LineWise;
-   vim_state.params.clusivity = VIM_Exclusive;
-   const i32 N = vim_consume_number();
+	vim_state.params.edit_type = EDIT_LineWise;
+	vim_state.params.clusivity = VIM_Exclusive;
+	const i32 N = vim_consume_number();
 	foreach(i,N)
 		move_down_to_blank_line_end(app);
 }
@@ -695,6 +695,7 @@ VIM_COMMAND_SIG(vim_goto_mark){
 }
 
 VIM_COMMAND_SIG(vim_open_file_in_quotes){
+	vim_push_jump(app, get_active_view(app, Access_ReadVisible));
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	if(buffer_exists(app, buffer)){
@@ -725,20 +726,41 @@ VIM_COMMAND_SIG(vim_open_file_in_quotes){
 	}
 }
 
+VIM_COMMAND_SIG(vim_goto_definition){
+	vim_push_jump(app, get_active_view(app, Access_ReadVisible));
+	jump_to_definition_at_cursor(app);
+}
+VIM_COMMAND_SIG(vim_next_4coder_jump){
+	vim_push_jump(app, get_active_view(app, Access_ReadVisible));
+	goto_next_jump(app);
+}
+VIM_COMMAND_SIG(vim_prev_4coder_jump){
+	vim_push_jump(app, get_active_view(app, Access_ReadVisible));
+	goto_prev_jump(app);
+}
+VIM_COMMAND_SIG(vim_first_4coder_jump){
+	vim_push_jump(app, get_active_view(app, Access_ReadVisible));
+	goto_first_jump(app);
+}
+
 // TODO(BYP)
 function void vim_move_selection_inner(Application_Links *app, Scan_Direction direction){
-	View_ID view = get_active_view(app, Access_ReadWriteVisible);
-	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
+	//View_ID view = get_active_view(app, Access_ReadWriteVisible);
+	//Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
+	//Range_i64 range = get_view_range(app, view);
 
-	i64 pos = view_get_cursor_pos(app, view);
-	i64 line_number = get_line_number_from_pos(app, buffer, pos);
+	////if(range.){};
 
-	//swap_lines(Application_Links *app, Buffer_ID buffer, i64 line_1, i64 line_2);
+	//Scratch_Block scratch(app);
 
-	foreach(i,1){
-		pos = move_line(app, buffer, line_number, direction);
-	}
-	view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
+	//b32 up = (direction != Scan_Backward);
+	//i64 copy_pos  = *(&range.min +  up);
+	//i64 paste_pos = *(&range.min + !up);
+
+	//i64 pos = view_get_cursor_pos(app, view);
+	//i64 copy_line  = get_line_number_from_pos(app, buffer, copy_pos);
+	//i64 paste_line = get_line_number_from_pos(app, buffer, paste_pos);
+
 }
 
 VIM_COMMAND_SIG(vim_move_selection_up){   vim_move_selection_inner(app, Scan_Backward); }

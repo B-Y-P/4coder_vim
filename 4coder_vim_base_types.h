@@ -45,7 +45,8 @@ enum Vim_Sub_Mode{
 	VIM_SUBMODE_COUNT,
 };
 
-enum Vim_Request_Type{
+typedef u32 Vim_Request_Type;
+enum{
 	REQUEST_None,
 	REQUEST_Yank,
 	REQUEST_Delete,
@@ -115,7 +116,7 @@ struct Vim_State{
 	Vim_Mode mode;
 	Vim_Sub_Mode sub_mode;
 
-   Arena arena;
+	Arena arena;
 	Heap heap;
 	Base_Allocator alloc;
 
