@@ -110,19 +110,20 @@ function void
 vim_paste(Application_Links *app, View_ID view, Buffer_ID buffer, Vim_Register *reg){
 	if(reg->edit_type == EDIT_Block){ vim_block_paste(app, view, buffer, reg); return; }
 
-   i64 pos = view_get_cursor_pos(app, view);
+	i64 pos = view_get_cursor_pos(app, view);
 	if(reg == &vim_registers.system){
-      clipboard_update_history_from_system(app, 0);
-      i32 count = clipboard_count(0);
-      if(count > 0){
-         Managed_Scope scope = view_get_managed_scope(app, view);
-         i32 *paste_index = scope_attachment(app, scope, view_paste_index_loc, i32);
-         if(paste_index){
-            Scratch_Block scratch(app);
-            vim_register_copy(reg, push_clipboard_index(app, scratch, 0, *paste_index=0));
-            vim_update_registers(app);
-         }
-      }
+		clipboard_update_history_from_system(app, 0);
+		clipboard_update_history_from_system(app, 0);
+		i32 count = clipboard_count(0);
+		if(count > 0){
+			Managed_Scope scope = view_get_managed_scope(app, view);
+			i32 *paste_index = scope_attachment(app, scope, view_paste_index_loc, i32);
+			if(paste_index){
+				Scratch_Block scratch(app);
+				vim_register_copy(reg, push_clipboard_index(app, scratch, 0, *paste_index=0));
+				vim_update_registers(app);
+			}
+		}
 	}
 	buffer_replace_range(app, buffer, Ii64(pos), reg->data.string);
 	view_set_mark(app, view, seek_pos(pos));
@@ -182,14 +183,14 @@ function void
 vim_process_insert_record(Application_Links *app, Record_Info record, i64 *prev_pos){
 	Scratch_Block scratch(app);
 	String_u8 *text = &vim_registers.insert.data;
-   if(*prev_pos != record.pos_before_edit){
+	if(*prev_pos != record.pos_before_edit){
 		*prev_pos = record.pos_before_edit;
 		text->size = 0;
 	}
 	*prev_pos = *prev_pos  - record.single_string_backward.size + record.single_string_forward.size;
 	text->size = Max(0, i64(text->size) - i64(record.single_string_backward.size));
-   u64 next_size = u64(text->size + record.single_string_forward.size);
-   if(next_size >= text->cap){ vim_realloc_string(text, next_size); }
+	u64 next_size = u64(text->size + record.single_string_forward.size);
+	if(next_size >= text->cap){ vim_realloc_string(text, next_size); }
 	string_append(text, record.single_string_forward);
 }
 
@@ -213,14 +214,14 @@ vim_set_insert_register(Application_Links *app){
 		else if(record.kind == RecordKind_Group){
 			foreach(i, record.group_count){
 				Record_Info sub_record = buffer_history_get_group_sub_record(app, buffer, index, i);
-            if(sub_record.error != RecordError_NoError){ continue; }
-            vim_process_insert_record(app, sub_record, &prev_pos);
+				if(sub_record.error != RecordError_NoError){ continue; }
+				vim_process_insert_record(app, sub_record, &prev_pos);
 			}
 		}
 	}
 	vim_state.prev_params.do_insert = true;
 	vim_registers.insert.flags &= (~REGISTER_Append);
-   vim_registers.insert.flags |= (REGISTER_Set|REGISTER_Updated);
+	vim_registers.insert.flags |= (REGISTER_Set|REGISTER_Updated);
 	vim_update_registers(app);
 
 	history_group_end(vim_history_group);

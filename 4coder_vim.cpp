@@ -107,7 +107,9 @@ vim_init(Application_Links *app){
 
 #if VIM_USE_REIGSTER_BUFFER
 	Buffer_ID reg_buffer = create_buffer(app, string_u8_litexpr("*registers*"),
-                                        BufferCreate_NeverAttachToFile|BufferCreate_AlwaysNew);
+										 BufferCreate_NeverAttachToFile|BufferCreate_AlwaysNew);
+	buffer_set_setting(app, reg_buffer, BufferSetting_ReadOnly, true);
+	buffer_set_setting(app, reg_buffer, BufferSetting_Unkillable, true);
 	buffer_set_setting(app, reg_buffer, BufferSetting_Unimportant, true);
 #endif
 
@@ -245,7 +247,7 @@ vim_handle_replace_mode(Application_Links *app, Input_Event *event){
 			if(has_modifier(event, KeyCode_Control)){
 				i64 cursor_pos = view_get_cursor_pos(app, view);
 				while(cursor_pos != view_get_mark_pos(app, view) &&
-                  !character_is_whitespace(buffer_get_char(app, buffer, cursor_pos-1)))
+					  !character_is_whitespace(buffer_get_char(app, buffer, cursor_pos-1)))
 				{
 					undo(app);
 					cursor_pos = view_get_cursor_pos(app, view);
