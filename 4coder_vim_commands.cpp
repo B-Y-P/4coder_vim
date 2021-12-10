@@ -171,6 +171,21 @@ VIM_COMMAND_SIG(vim_prev_visual){
 	}
 }
 
+VIM_COMMAND_SIG(vim_block_swap){
+	View_ID view = get_active_view(app, Access_ReadVisible);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+	i64 c = view_get_cursor_pos(app, view);
+	i64 m = view_get_mark_pos(app, view);
+	i64 line = get_line_number_from_pos(app, buffer, c);
+	Vec2_f32 c_p = view_relative_xy_of_pos(app, view, line, c);
+	Vec2_f32 m_p = view_relative_xy_of_pos(app, view, line, m);
+	Swap(f32, c_p.x, m_p.x);
+	c = view_pos_at_relative_xy(app, view, line, c_p);
+	m = view_pos_at_relative_xy(app, view, line, m_p);
+	view_set_cursor(app, view, seek_pos(c));
+	view_set_mark(app, view, seek_pos(m));
+}
+
 VIM_COMMAND_SIG(vim_replace_mode){
 	vim_state.mode = VIM_Replace;
 	set_mark(app);
@@ -743,28 +758,30 @@ VIM_COMMAND_SIG(vim_first_4coder_jump){
 	goto_first_jump(app);
 }
 
-// TODO(BYP)
-function void vim_move_selection_inner(Application_Links *app, Scan_Direction direction){
+function void vim_move_selection(Application_Links *app, Scan_Direction direction){
 	//View_ID view = get_active_view(app, Access_ReadWriteVisible);
 	//Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
-	//Range_i64 range = get_view_range(app, view);
 
-	////if(range.){};
+	//const i32 N = vim_consume_number();
+	//foreach(i, N){
+	//   Range_i64 range = get_view_range(app, view);
 
-	//Scratch_Block scratch(app);
+	//   if(range.){};
 
-	//b32 up = (direction != Scan_Backward);
-	//i64 copy_pos  = *(&range.min +  up);
-	//i64 paste_pos = *(&range.min + !up);
+	//   Scratch_Block scratch(app);
 
-	//i64 pos = view_get_cursor_pos(app, view);
-	//i64 copy_line  = get_line_number_from_pos(app, buffer, copy_pos);
-	//i64 paste_line = get_line_number_from_pos(app, buffer, paste_pos);
+	//   b32 up = (direction != Scan_Backward);
+	//   i64 copy_pos  = *(&range.min +  up);
+	//   i64 paste_pos = *(&range.min + !up);
 
+	//   i64 pos = view_get_cursor_pos(app, view);
+	//   i64 copy_line  = get_line_number_from_pos(app, buffer, copy_pos);
+	//   i64 paste_line = get_line_number_from_pos(app, buffer, paste_pos);
+	//}
 }
 
-VIM_COMMAND_SIG(vim_move_selection_up){   vim_move_selection_inner(app, Scan_Backward); }
-VIM_COMMAND_SIG(vim_move_selection_down){ vim_move_selection_inner(app, Scan_Forward); }
+VIM_COMMAND_SIG(vim_move_selection_up){   vim_move_selection(app, Scan_Backward); }
+VIM_COMMAND_SIG(vim_move_selection_down){ vim_move_selection(app, Scan_Forward); }
 
 
 function i32 vim_macro_index(u8 c){

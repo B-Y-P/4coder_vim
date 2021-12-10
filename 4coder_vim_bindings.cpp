@@ -156,6 +156,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|V|MAP, vim_screen_bot,                  (Sft|KeyCode_L));
 	VimBind(N|V|MAP, vim_screen_mid,                  (Sft|KeyCode_M));
 	VimBind(V|MAP,   cursor_mark_swap,                     KeyCode_O);
+	VimBind(V|MAP,   vim_block_swap,                  (Sft|KeyCode_O));
 
 	VimBind(N|MAP, vim_search_identifier,         (Ctl|Sft|KeyCode_8));
 	VimBind(N|MAP, vim_clear_search,          SUB_Leader,  KeyCode_Space);
