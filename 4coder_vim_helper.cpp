@@ -85,7 +85,8 @@ function void vim_dec_jump(Application_Links *app, View_ID view){
 	Vim_Jump_List *jump_list = scope_attachment(app, scope, vim_view_jumps, Vim_Jump_List);
 	if(jump_list){
 		if(jump_list->index == jump_list->bot){ return; }
-		vim_set_jump(app, view, jump_list, ArrayDec(jump_list->markers, jump_list->index));
+		vim_set_jump(app, view, jump_list, jump_list->index);
+		jump_list->index = ArrayDec(jump_list->markers, jump_list->index);
 	}
 }
 
