@@ -351,14 +351,15 @@ vim_lister_render(Application_Links *app, Frame_Info frame_info, View_ID view){
 		Fancy_Line line = {};
 		push_fancy_string(scratch, &line, fcolor_id(defcolor_text_default), node->string);
 		push_fancy_stringf(scratch, &line, " ");
-		push_fancy_string(scratch, &line, fcolor_id(defcolor_pop2), node->status);
+		u64 index = string_find_last(node->status, '\n');
+		push_fancy_string(scratch, &line, fcolor_id(defcolor_pop2), string_prefix(node->status, index));
 
 		Vec2_f32 p = item_inner.p0 + V2f32(3.f, (block_height - line_height)*0.5f);
 		draw_fancy_line(app, face_id, fcolor_zero(), &line, p);
 	}
-	//f32 x_padding = metrics.normal_advance;
-	//f32 x_half_padding = x_padding*0.5f;
-	//draw_drop_down(app, face_id, &block, m_p, region, x_padding, x_half_padding, fcolor_id(defcolor_margin_hover), fcolor_id(defcolor_back));
+	f32 x_padding = metrics.normal_advance;
+	f32 x_half_padding = x_padding*0.5f;
+	draw_drop_down(app, face_id, &block, m_p, region, x_padding, x_half_padding, fcolor_id(defcolor_margin_hover), fcolor_id(defcolor_back));
 
 	if(lister->visible_count != 0){
 		Rect_f32 rect = Rect_f32{region.x0, region.y1 - 4.f, region.x1, region.y1};
