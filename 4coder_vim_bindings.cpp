@@ -108,8 +108,8 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|MAP,   vim_toggle_char,                 (Sft|KeyCode_Tick));
 	VimBind(I|MAP,   vim_select_register,             (Ctl|KeyCode_R));
 	VimBind(I|MAP,   vim_delete_to_begin,             (Ctl|KeyCode_U));
-	//VimBind(V|MAP,   vim_move_selection_up,           (Alt|KeyCode_Up));
-	//VimBind(V|MAP,   vim_move_selection_down,         (Alt|KeyCode_Down));
+	VimBind(V|MAP,   vim_move_selection_up,           (Alt|KeyCode_K));
+	VimBind(V|MAP,   vim_move_selection_down,         (Alt|KeyCode_J));
 
 	/// Digit Binds
 	VimBind(N|V|MAP, vim_modal_0,                          KeyCode_0);
