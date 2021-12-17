@@ -44,7 +44,7 @@ vim_draw_visual_mode(Application_Links *app, View_ID view, Buffer_ID buffer, Fac
 
 			if(vim_do_full_line){
 				Range_i64 line_range = Ii64(get_line_number_from_pos(app, buffer, range.min),
-                                        get_line_number_from_pos(app, buffer, range.max)-1);
+											get_line_number_from_pos(app, buffer, range.max)-1);
 				draw_line_highlight(app, text_layout_id, line_range, fcolor_id(defcolor_highlight));
 				paint_text_color(app, text_layout_id, range, text_color);
 				break;
@@ -125,11 +125,11 @@ vim_draw_filebar(Application_Links *app, View_ID view_id, Buffer_ID buffer, Fram
 		draw_string(app, face_id, str.string, p, pop2_color);
 	}
 
+	p.x = Max(p.x + 5.f*char_wid, bar.x1 - char_wid*15.f);
+	draw_string(app, face_id, push_stringf(scratch, "%d,%d", cursor.line, cursor.col), p, base_color);
+
 	p.x = bar.x0 + 2.f;
 	draw_string(app, face_id, unique_name, p, base_color);
-
-	p.x = bar.x1 - char_wid*15.f;
-	draw_string(app, face_id, push_stringf(scratch, "%d,%d", cursor.line, cursor.col), p, base_color);
 
 	p.x = bar.x1 - char_wid*3.5f;
 	i64 buffer_size = buffer_get_size(app, buffer);
@@ -141,7 +141,7 @@ vim_draw_filebar(Application_Links *app, View_ID view_id, Buffer_ID buffer, Fram
 	}else{
 		PosText = push_stringf(scratch, "%d%%", i64(100.f*cursor_position/(buffer_size)));
 	}
-	draw_string(app, face_id, PosText, p, finalize_color(defcolor_text_default, 0));
+	draw_string(app, face_id, PosText, p, base_color);
 }
 
 function void
@@ -198,8 +198,8 @@ vim_draw_cursor(Application_Links *app, View_ID view, b32 is_active_view, Buffer
 
 			if(ACTIVE_BLINK(vim_cursor_blink) && vim_state.params.consume_next_key != vim_select_register_consume){
 				if(vim_state.mode == VIM_Insert){ rect = rect_split_top_bottom_neg(rect, 5.f).b; }
-            //if(vim_state.mode == VIM_Insert){ rect = rect_split_left_right(rect, 2.f).a; }
-            if(rect.p1 != V2f32(0,0)){
+				//if(vim_state.mode == VIM_Insert){ rect = rect_split_left_right(rect, 2.f).a; }
+				if(rect.p1 != V2f32(0,0)){
 					vim_nxt_cursor_pos = rect.p1;
 				}
 
