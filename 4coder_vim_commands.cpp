@@ -137,7 +137,8 @@ VIM_COMMAND_SIG(vim_newline_below){
 }
 
 VIM_COMMAND_SIG(vim_newline_above){
-	vim_insert_begin(app);
+	vim_line_start(app);
+	vim_enter_insert_mode(app);
 	vim_state.insert_index++;
 	write_text(app, string_u8_litexpr("\n"));
 	move_vertical_lines(app, -1);
