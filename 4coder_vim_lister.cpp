@@ -99,18 +99,14 @@ vim_lister__write_character__file_path(Application_Links *app){
 	Lister_Activation_Code result = ListerActivation_Continue;
 	View_ID view = get_this_ctx_view(app, Access_Always);
 	Lister *lister = view_get_lister(app, view);
-	if (lister != 0){
+	if(lister != 0){
 		User_Input in = get_current_input(app);
 		String_Const_u8 string = to_writable(&in);
-		if (string.str != 0 && string.size > 0){
+		if(string.str != 0 && string.size > 0){
 			lister_append_text_field(lister, string);
-			if (character_is_slash(string.str[0])){
+			if(character_is_slash(string.str[0])){
 				lister->out.text_field = lister->text_field.string;
-				result = ListerActivation_ContinueAndRefresh;
-
-				set_hot_directory(app, SCu8(lister->text_field.str, lister->text_field.size));
-				//String_u8 temp = lister->text_field;
-				//lister_call_refresh_handler(app, lister);
+                result = ListerActivation_Finished;
 			}
 			else{
 				String_Const_u8 front_name = string_front_of_path(lister->text_field.string);

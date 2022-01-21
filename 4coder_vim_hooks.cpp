@@ -45,7 +45,7 @@ CUSTOM_DOC("Input consumption loop for vim behavior")
 		}
 
 		if(!(event_properties & EventPropertyGroup_AnyMouseEvent) && input.event.kind != InputEventKind_None){
-         vim_keystroke_text.size = 0;
+			vim_keystroke_text.size = 0;
 			vim_cursor_blink = 0;
 		}
 
@@ -98,7 +98,7 @@ VIM_COMMAND_SIG(vim_insert_command){
 		}
 
 		if(!(event_properties & EventPropertyGroup_AnyMouseEvent) && input.event.kind != InputEventKind_None){
-         vim_keystroke_text.size = 0;
+			vim_keystroke_text.size = 0;
 			vim_cursor_blink = 0;
 		}
 
@@ -149,6 +149,17 @@ vim_begin_buffer_inner(Application_Links *app, Buffer_ID buffer_id){
 
 	i64 *marks = (i64 *)managed_scope_get_attachment(app, scope, vim_buffer_marks, 26*sizeof(i64));
 	block_fill_u64(marks, 26*sizeof(i64), max_u64);
+
+	Base_Allocator *allocator = managed_scope_allocator(app, scope);
+	Vim_Folds *folds = scope_attachment(app, scope, vim_buffer_folds, Vim_Folds);
+	String_Const_u8 range_data = base_allocate(allocator, 10*sizeof(Range_Cursor));
+	String_Const_u8 active_data = base_allocate(allocator, 10*sizeof(b32));
+	folds->fold_ranges = (Range_Cursor *)range_data.str;
+	folds->fold_active = (b32 *)active_data.str;
+	folds->fold_cap = 10;
+
+	b32 *wrap_lines_ptr = scope_attachment(app, scope, buffer_wrap_lines, b32);
+	*wrap_lines_ptr = false;
 }
 
 BUFFER_HOOK_SIG(vim_begin_buffer){
@@ -212,5 +223,34 @@ vim_tick(Application_Links *app, Frame_Info frame_info){
 	if(enable_virtual_whitespace != def_enable_virtual_whitespace){
 		def_enable_virtual_whitespace = enable_virtual_whitespace;
 		clear_all_layouts(app);
+	}
+}
+
+CUSTOM_COMMAND_SIG(vim_try_exit)
+CUSTOM_DOC("Vim command for responding to a try-exit event")
+{
+	User_Input input = get_current_input(app);
+	if(match_core_code(&input, CoreCode_TryExit)){
+		b32 do_exit = true;
+		if(!allow_immediate_close_without_checking_for_changes){
+			b32 has_unsaved_changes = false;
+			for(Buffer_ID buffer = get_buffer_next(app, 0, Access_Always);
+				buffer;
+				buffer = get_buffer_next(app, buffer, Access_Always))
+			{
+				Dirty_State dirty = buffer_get_dirty_state(app, buffer);
+				if(HasFlag(dirty, DirtyState_UnsavedChanges)){
+					has_unsaved_changes = true;
+					break;
+				}
+			}
+			if(has_unsaved_changes){
+				View_ID view = get_active_view(app, Access_Always);
+				do_exit = vim_do_4coder_close_user_check(app, view);
+			}
+		}
+		if(do_exit){
+			hard_exit(app);
+		}
 	}
 }
