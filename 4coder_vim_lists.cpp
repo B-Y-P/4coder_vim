@@ -204,7 +204,7 @@ CUSTOM_DOC("Interactively open a file out of the file system.")
 		Scratch_Block scratch(app);
 		View_ID view = get_this_ctx_view(app, Access_Always);
 		File_Name_Result result = vim_get_file_name_from_user(app, scratch, SCu8("Open/New:"), view);
-		if(result.canceled){ break; }
+		if(result.canceled || result.path_in_text_field.str == 0){ break; }
 
 		String_Const_u8 file_name = result.file_name_activated;
 		if(file_name.size == 0){ file_name = result.file_name_in_text_field; }
