@@ -150,14 +150,6 @@ vim_begin_buffer_inner(Application_Links *app, Buffer_ID buffer_id){
 	i64 *marks = (i64 *)managed_scope_get_attachment(app, scope, vim_buffer_marks, 26*sizeof(i64));
 	block_fill_u64(marks, 26*sizeof(i64), max_u64);
 
-	Base_Allocator *allocator = managed_scope_allocator(app, scope);
-	Vim_Folds *folds = scope_attachment(app, scope, vim_buffer_folds, Vim_Folds);
-	String_Const_u8 range_data = base_allocate(allocator, 10*sizeof(Range_Cursor));
-	String_Const_u8 active_data = base_allocate(allocator, 10*sizeof(b32));
-	folds->fold_ranges = (Range_Cursor *)range_data.str;
-	folds->fold_active = (b32 *)active_data.str;
-	folds->fold_cap = 10;
-
 	b32 *wrap_lines_ptr = scope_attachment(app, scope, buffer_wrap_lines, b32);
 	*wrap_lines_ptr = false;
 }
