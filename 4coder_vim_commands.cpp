@@ -8,9 +8,12 @@ CUSTOM_COMMAND_SIG(vim_toggle_show_buffer_peek)
 CUSTOM_DOC("Toggles buffer peek")
 {
 	vim_show_buffer_peek ^= 1;
-	f32 height = 0.3f*rect_height(global_get_screen_rectangle(app));
+	f32 screen_height = rect_height(global_get_screen_rectangle(app));
+	f32 height = Min(0.3f, VIM_LISTER_MAX_RATIO)*screen_height;
 	Input_Event event = get_current_input(app).event;
-	if(event.kind == InputEventKind_KeyStroke && has_modifier(&event, KeyCode_Shift)){ height *= 2.f; }
+	if(event.kind == InputEventKind_KeyStroke && has_modifier(&event, KeyCode_Shift)){
+		height = VIM_LISTER_MAX_RATIO*screen_height;
+	}
 
 	vim_nxt_filebar_offset = vim_show_buffer_peek*height;
 }
