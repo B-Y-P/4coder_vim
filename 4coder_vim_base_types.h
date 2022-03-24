@@ -56,6 +56,7 @@ enum{
 	REQUEST_Replace,
 	REQUEST_Indent, REQUEST_Outdent,
 	REQUEST_AutoIndent,
+	REQUEST_Fold,
 	VIM_REQUEST_COUNT
 };
 

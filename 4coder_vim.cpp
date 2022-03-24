@@ -97,6 +97,9 @@ VIM_REQUEST_SIG(vim_apply_toggle_case){
 	buffer_post_fade(app, buffer, 0.667f, range, fcolor_resolve(fcolor_id(defcolor_paste)));
 }
 
+VIM_REQUEST_SIG(vim_apply_fold){
+	fold_push(app, buffer, range);
+}
 
 function void
 vim_init(Application_Links *app){
@@ -128,6 +131,7 @@ vim_init(Application_Links *app){
 	vim_request_vtable[REQUEST_Indent]     = vim_apply_indent;
 	vim_request_vtable[REQUEST_Outdent]    = vim_apply_outdent;
 	vim_request_vtable[REQUEST_AutoIndent] = vim_apply_auto_indent;
+	vim_request_vtable[REQUEST_Fold]       = vim_apply_fold;
 
 	vim_text_object_vtable[TEXT_OBJECT_para] = {'p', (Vim_Text_Object_Func *)vim_object_para};
 	vim_text_object_vtable[TEXT_OBJECT_word] = {'w', (Vim_Text_Object_Func *)vim_object_word};
@@ -369,6 +373,7 @@ vim_handle_input(Application_Links *app, Input_Event *event){
 			Custom_Command_Function *vim_func = (Custom_Command_Function *)IntAsPtr(function_data);
 			if(vim_func){
 				// Pre command stuff
+				vim_pre_keystroke_size = vim_keystroke_text.size;
 				vim_append_keycode(code);
 				vim_state.active_command = vim_func;
 				vim_state.chord_resolved = true;

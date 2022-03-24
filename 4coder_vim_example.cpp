@@ -157,8 +157,8 @@ EXAMPLE_render_caller(Application_Links *app, Frame_Info frame_info, View_ID vie
 	Rect_f32 line_number_rect = {};
 	if(show_line_number_margins){
 		Rect_f32_Pair pair = (vim_relative_numbers ?
-                            vim_line_number_margin(app, buffer, region, digit_advance) :
-                            layout_line_number_margin(app, buffer, region, digit_advance));
+							  vim_line_number_margin(app, buffer, region, digit_advance) :
+							  layout_line_number_margin(app, buffer, region, digit_advance));
 		line_number_rect = pair.min;
 		region = pair.max;
 	}
@@ -175,9 +175,9 @@ EXAMPLE_render_caller(Application_Links *app, Frame_Info frame_info, View_ID vie
 
 	if(show_line_number_margins){
 		if(vim_relative_numbers)
-			draw_rel_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+			vim_draw_rel_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
 		else
-			draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+			vim_draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
 	}
 
 	EXAMPLE_render_buffer(app, view_id, face_id, buffer, text_layout_id, region);
@@ -226,8 +226,8 @@ EXAMPLE_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
 	b32 show_line_number_margins = def_get_config_b32(vars_save_string_lit("show_line_number_margins"));
 	if(show_line_number_margins){
 		region = (vim_relative_numbers ?
-                vim_line_number_margin(app, buffer, region, digit_advance) :
-                layout_line_number_margin(app, buffer, region, digit_advance)).max;
+				  vim_line_number_margin(app, buffer, region, digit_advance) :
+				  layout_line_number_margin(app, buffer, region, digit_advance)).max;
 	}
 
 	return region;
@@ -275,7 +275,7 @@ VIM_REQUEST_SIG(EXAMPLE_apply_title){
 	u8 prev = buffer_get_char(app, buffer, range.min-1);
 	for(i32 i=0; i<text.size; i++){
 		text.str[i] += u8(i32('A' - 'a')*((!character_is_alpha(prev) || prev == '_') &&
-                                        character_is_lower(text.str[i])));
+										  character_is_lower(text.str[i])));
 		prev = text.str[i];
 	}
 	buffer_replace_range(app, buffer, range, text);

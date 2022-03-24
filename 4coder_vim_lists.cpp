@@ -163,7 +163,7 @@ vim_get_choice_from_user(Application_Links *app, String_Const_u8 query, Lister_C
 
 function b32
 vim_query_create_folder(Application_Links *app, String_Const_u8 folder_name){
-    Scratch_Block scratch(app);
+	Scratch_Block scratch(app);
     Lister_Choice_List list = {};
     lister_choice(scratch, &list, "(N)o"  , "", KeyCode_N, SureToKill_No);
     lister_choice(scratch, &list, "(Y)es" , "", KeyCode_Y, SureToKill_Yes);
@@ -171,26 +171,23 @@ vim_query_create_folder(Application_Links *app, String_Const_u8 folder_name){
     String_Const_u8 message = push_u8_stringf(scratch, "Create the folder %.*s?", string_expand(folder_name));
     Lister_Choice *choice = vim_get_choice_from_user(app, message, list);
 
-    b32 did_create_folder = false;
-    if (choice != 0){
-        switch (choice->user_data){
-            case SureToCreateFolder_No:
-            {}break;
+	b32 did_create_folder = false;
+    if(choice != 0){
+        switch(choice->user_data){
+            case SureToCreateFolder_No:{} break;
 
-            case SureToCreateFolder_Yes:
-            {
-                String_Const_u8 hot = push_hot_directory(app, scratch);
-                String_Const_u8 fixed_folder_name = folder_name;
-                for (;fixed_folder_name.size > 0 &&
-                     character_is_slash(fixed_folder_name.str[fixed_folder_name.size - 1]);){
-                    fixed_folder_name = string_chop(fixed_folder_name, 1);
-                }
-                if (fixed_folder_name.size > 0){
+            case SureToCreateFolder_Yes:{
+				String_Const_u8 hot = push_hot_directory(app, scratch);
+                String_Const_u8 fixed_folder_name = push_string_copy(scratch, folder_name);
+                foreach(i, fixed_folder_name.size){
+					if(fixed_folder_name.str[i] == '/'){ fixed_folder_name.str[i] = '\\'; }
+				}
+                if(fixed_folder_name.size > 0){
                     String_Const_u8 cmd = push_u8_stringf(scratch, "mkdir %.*s", string_expand(fixed_folder_name));
                     exec_system_command(app, 0, buffer_identifier(0), hot, cmd, 0);
                     did_create_folder = true;
-                }
-            }break;
+				}
+            } break;
         }
     }
 
@@ -228,7 +225,7 @@ CUSTOM_DOC("Interactively open a file out of the file system.")
 				set_hot_directory(app, file_name);
 				continue;
 			}
-			if(vim_query_create_folder(app, file_name)){
+			if(vim_query_create_folder(app, full_file_name)){
 				set_hot_directory(app, full_file_name);
 				continue;
 			}else{
@@ -440,40 +437,114 @@ CUSTOM_DOC("Opens an interactive lists of the views jumps")
 	vim_set_jump(app, view, jump_list, index);
 }
 
-// TODO(BYP)
-//CUSTOM_UI_COMMAND_SIG(vim_reload_prompt_lister);
-
-//CUSTOM_UI_COMMAND_SIG(vim_interactive_kill_buffer);
 
 function b32
-vim_do_4coder_close_user_check(Application_Links *app, View_ID view){
+vim_do_buffer_close_user_check(Application_Links *app, Buffer_ID buffer, View_ID view){
     Scratch_Block scratch(app);
     Lister_Choice_List list = {};
     lister_choice(scratch, &list, "(N)o"  , "", KeyCode_N, SureToKill_No);
     lister_choice(scratch, &list, "(Y)es" , "", KeyCode_Y, SureToKill_Yes);
-    lister_choice(scratch, &list, "(S)ave all and close", "", KeyCode_S, SureToKill_Save);
+    lister_choice(scratch, &list, "(S)ave", "", KeyCode_S, SureToKill_Save);
 
-#define M "There are one or more buffers with unsave changes, close anyway?"
-    Lister_Choice *choice = vim_get_choice_from_user(app, string_u8_litexpr(M), list);
-#undef M
+    Lister_Choice *choice = vim_get_choice_from_user(app, string_u8_litexpr("There are unsaved changes, close anyway?"), list);
 
-    b32 do_exit = false;
-    if(choice != 0){
-        switch(choice->user_data){
+    b32 do_kill = false;
+    if (choice != 0){
+        switch (choice->user_data){
             case SureToKill_No:{} break;
 
-            case SureToKill_Yes:{
-                allow_immediate_close_without_checking_for_changes = true;
-                do_exit = true;
-            } break;
+            case SureToKill_Yes:{ do_kill = true; } break;
 
             case SureToKill_Save:{
-                save_all_dirty_buffers(app);
-                allow_immediate_close_without_checking_for_changes = true;
-                do_exit = true;
+                String_Const_u8 file_name = push_buffer_file_name(app, scratch, buffer);
+                if(buffer_save(app, buffer, file_name, BufferSave_IgnoreDirtyFlag)){
+                    do_kill = true;
+                }else{
+#define M "Did not close '%.*s' because it did not successfully save."
+                    String_Const_u8 str = push_u8_stringf(scratch, M, string_expand(file_name));
+#undef M
+                    print_message(app, str);
+                }
             } break;
         }
     }
 
-    return do_exit;
+    return do_kill;
 }
+
+function Buffer_Kill_Result
+vim_try_buffer_kill(Application_Links *app){
+	View_ID view = get_active_view(app, Access_ReadVisible);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+	Buffer_Kill_Flag flags = 0;
+	Buffer_Kill_Result result = buffer_kill(app, buffer, flags);
+	if(result == BufferKillResult_Dirty){
+		if(vim_do_buffer_close_user_check(app, buffer, view)){
+			result = buffer_kill(app, buffer, BufferKill_AlwaysKill);
+		}
+	}
+	return result;
+}
+
+function b32
+vim_do_4coder_close_user_check(Application_Links *app, View_ID view){
+	Scratch_Block scratch(app);
+	Lister_Choice_List list = {};
+	lister_choice(scratch, &list, "(N)o"  , "", KeyCode_N, SureToKill_No);
+	lister_choice(scratch, &list, "(Y)es" , "", KeyCode_Y, SureToKill_Yes);
+	lister_choice(scratch, &list, "(S)ave all and close", "", KeyCode_S, SureToKill_Save);
+
+#define M "There are one or more buffers with unsave changes, close anyway?"
+	Lister_Choice *choice = vim_get_choice_from_user(app, string_u8_litexpr(M), list);
+#undef M
+
+	b32 do_exit = false;
+	if(choice != 0){
+		switch(choice->user_data){
+			case SureToKill_No:{} break;
+
+			case SureToKill_Yes:{
+				allow_immediate_close_without_checking_for_changes = true;
+				do_exit = true;
+			} break;
+
+			case SureToKill_Save:{
+				save_all_dirty_buffers(app);
+				allow_immediate_close_without_checking_for_changes = true;
+				do_exit = true;
+			} break;
+		}
+	}
+
+	return do_exit;
+}
+
+function void
+vim_reload_external_changes_lister(Application_Links *app, Buffer_ID buffer){
+	Scratch_Block scratch(app);
+	Lister_Choice_List list = {};
+	String_Const_u8 buffer_name = push_buffer_base_name(app, scratch, buffer);
+
+	if(buffer_name.size == 0){ return; }
+	lister_choice(scratch, &list, buffer_name, "", KeyCode_Q, u64(0));
+	lister_choice(scratch, &list, "(L)oad external changes"  , "", KeyCode_L, u64(1));
+	lister_choice(scratch, &list, "(K)eep current buffer" , "", KeyCode_K, u64(0));
+
+#define M "External changes have been detected. Reload buffer from file?"
+	Lister_Choice *choice = vim_get_choice_from_user(app, string_u8_litexpr(M), list);
+#undef M
+
+	if(choice != 0 && choice->user_data){
+		buffer_reopen(app, buffer, 0);
+	}
+}
+
+// NOTE(BYP): This hook isn't officially supported by core (it will false positive) it was just fun to write
+CUSTOM_COMMAND_SIG(vim_file_externally_modified){
+	User_Input input = get_current_input(app);
+	if(match_core_code(&input, CoreCode_FileExternallyModified)){
+		print_message(app, input.event.core.string);
+		vim_reload_external_changes_lister(app, input.event.core.id);
+	}
+}
+

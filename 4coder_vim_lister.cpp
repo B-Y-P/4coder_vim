@@ -48,41 +48,37 @@ vim_lister_file__backspace(Application_Links *app){
 	Lister *lister = view_get_lister(app, view);
 	if(lister){
 		User_Input input = get_current_input(app);
-		i32 slash_index = i32(lister->text_field.size-1);
 		if(has_modifier(&input, KeyCode_Control)){
 			if(has_modifier(&input, KeyCode_Shift)){
 				lister->text_field.size = 0;
 				while(!character_is_slash(lister->text_field.str[++lister->text_field.size])){}
 				++lister->text_field.size;
-				u8 c = lister->text_field.str[0];
 				String_u8 temp = lister->text_field;
 
-				set_hot_directory(app, SCu8(lister->text_field.str, lister->text_field.size-1));
+				set_hot_directory(app, temp.string);
 				lister_call_refresh_handler(app, lister);
 				lister->text_field = temp;
-				lister->text_field.str[0] = c;
-				slash_index=0;
-				// TODO(BYP) on cancel, this messes up
 			}else{
-				lister->text_field.string = ctrl_backspace_utf8(lister->text_field.string);
+				String_Const_u8 string = lister->text_field.string;
+				if(character_is_slash(string.str[string.size-1])){
+					string.size--;
+					i64 slash_index = string_find_last_slash(string);
+					if(slash_index >= 0){
+						string.size = slash_index+1;
+						lister->text_field.string = string;
+						set_hot_directory(app, string);
+						String_u8 temp = lister->text_field;
+						lister_call_refresh_handler(app, lister);
+						lister->text_field = temp;
+					}
+				}else{
+					lister->text_field.string = ctrl_backspace_utf8(lister->text_field.string);
+				}
 			}
 		}else{
 			lister->text_field.string = backspace_utf8(lister->text_field.string);
 		}
 
-		// string_find_first_slash(String_Const_char str);
-
-		if(lister->text_field.size > 0 && character_is_slash(lister->text_field.str[slash_index])){
-			while(slash_index > 0){
-				if(character_is_slash(lister->text_field.str[--slash_index])){
-					set_hot_directory(app, SCu8(lister->text_field.str, slash_index+1));
-					String_u8 temp = lister->text_field;
-					lister_call_refresh_handler(app, lister);
-					lister->text_field = temp;
-					break;
-				}
-			}
-		}
 		String_Const_u8 text_field = lister->text_field.string;
 		String_Const_u8 new_key = string_front_of_path(text_field);
 		lister_set_key(lister, new_key);

@@ -274,7 +274,7 @@ vim_line_number_margin(Application_Links *app, Buffer_ID buffer, Rect_f32 rect, 
 
 
 function void
-draw_rel_line_number_margin(Application_Links *app, View_ID view, Buffer_ID buffer, Face_ID face, Text_Layout_ID text_layout_id, Rect_f32 margin){
+vim_draw_rel_line_number_margin(Application_Links *app, View_ID view, Buffer_ID buffer, Face_ID face, Text_Layout_ID text_layout_id, Rect_f32 margin){
 	Rect_f32 prev_clip = draw_set_clip(app, margin);
 	draw_rectangle_fcolor(app, margin, 0.f, fcolor_id(defcolor_line_numbers_back));
 
@@ -320,23 +320,16 @@ draw_rel_line_number_margin(Application_Links *app, View_ID view, Buffer_ID buff
 	digit_buffer[digit_count-1] = '1';
 
 	for(;;){
-		i64 top_line = cur_line-rel_num;
 		i64 bot_line = cur_line+rel_num;
-		bool top_reached = (top_line < first_line_num);
-		bool bot_reached = (bot_line > one_past_last);
+		if(bot_line > one_past_last){ break; }
 
-		if(top_reached && bot_reached){ break; }
-
-		if(!top_reached){
-			line_y = text_layout_line_on_screen(app, text_layout_id, top_line);
-			p = V2f32(margin.x0, line_y.min);
-			draw_string(app, face, digit_string, p, fcolor_resolve(text_color));
+		for(;;){
+			line_y = text_layout_line_on_screen(app, text_layout_id, cur_line+rel_num);
+			if(line_y.min != line_y.max){ break; }
+			rel_num++;
 		}
-		if(!bot_reached){
-			line_y = text_layout_line_on_screen(app, text_layout_id, bot_line);
-			p = V2f32(margin.x0, line_y.min);
-			draw_string(app, face, digit_string, p, fcolor_resolve(text_color));
-		}
+		p = V2f32(margin.x0, line_y.min);
+		draw_string(app, face, digit_string, p, fcolor_resolve(text_color));
 
 		rel_num++;
 		ptr = small_digit;
@@ -346,6 +339,88 @@ draw_rel_line_number_margin(Application_Links *app, View_ID view, Buffer_ID buff
 			else{ (*ptr)++; break; }
 		}
 	}
+
+	rel_num = 1;
+	foreach(i, digit_count-1){ digit_buffer[i] = ' '; }
+	digit_buffer[digit_count-1] = '1';
+
+	for(;;){
+		i64 top_line = cur_line-rel_num;
+		if(top_line < first_line_num){ break; }
+
+		for(;;){
+			line_y = text_layout_line_on_screen(app, text_layout_id, cur_line-rel_num);
+			if(line_y.min != line_y.max){ break; }
+			rel_num++;
+		}
+		p = V2f32(margin.x0, line_y.min);
+		draw_string(app, face, digit_string, p, fcolor_resolve(text_color));
+
+		rel_num++;
+		ptr = small_digit;
+		while(ptr >= digit_buffer){
+			if(*ptr == ' '){ *ptr   = '0'; }
+			if(*ptr == '9'){ *ptr-- = '0'; }
+			else{ (*ptr)++; break; }
+		}
+	}
+	draw_set_clip(app, prev_clip);
+}
+
+function void
+vim_draw_line_number_margin(Application_Links *app, View_ID view, Buffer_ID buffer, Face_ID face, Text_Layout_ID text_layout_id, Rect_f32 margin){
+
+	Scratch_Block scratch(app);
+	Rect_f32 prev_clip = draw_set_clip(app, margin);
+	draw_rectangle_fcolor(app, margin, 0.f, fcolor_id(defcolor_line_numbers_back));
+
+	Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+    i64 line_count = buffer_get_line_count(app, buffer);
+    i64 digit_count = digit_count_from_integer(line_count, 10);
+
+	u8 *digit_buffer = push_array(scratch, u8, digit_count);
+	String_Const_u8 digit_string = SCu8(digit_buffer, digit_count);
+	foreach(i, digit_count){ digit_buffer[i] = ' '; }
+
+	i64 cur_line = view_compute_cursor(app, view, seek_pos(visible_range.min)).line;
+	i64 end_line = view_compute_cursor(app, view, seek_pos(visible_range.max)).line+1;
+
+	u8 *small_digit = digit_buffer + (digit_count-1) - 1;
+	u8 *ptr = small_digit;
+	if(cur_line == 0){ *ptr = '0'; }
+	else{
+		for(u64 X=cur_line; X>0; X/=10){
+			*ptr-- = '0' + (X%10);
+		}
+	}
+
+	Range_f32 line_y = text_layout_line_on_screen(app, text_layout_id, cur_line);
+	Vec2_f32 p = V2f32(margin.x0, line_y.min);
+
+	// NOTE(BYP): This assumes background is darker than font color
+	FColor text_color = fcolor_id(defcolor_line_numbers_text);
+	FColor contrast_color = fcolor_blend(text_color, 0.4f, f_white);
+
+	draw_string(app, face, digit_string, p, fcolor_resolve(contrast_color));
+
+	for(;;){
+		if(cur_line > end_line){ break; }
+
+		line_y = text_layout_line_on_screen(app, text_layout_id, cur_line);
+		if(line_y.min != line_y.max){
+			p = V2f32(margin.x0, line_y.min);
+			draw_string(app, face, digit_string, p, fcolor_resolve(text_color));
+		}
+
+		cur_line++;
+		ptr = small_digit;
+		while(ptr >= digit_buffer){
+			if(*ptr == ' '){ *ptr   = '0'; }
+			if(*ptr == '9'){ *ptr-- = '0'; }
+			else{ (*ptr)++; break; }
+		}
+	}
+
 	draw_set_clip(app, prev_clip);
 }
 

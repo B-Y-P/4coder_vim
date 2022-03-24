@@ -14,6 +14,7 @@ global u8 vim_bot_buffer[256];
 global String_u8 vim_bot_text = Su8(vim_bot_buffer, 0, ArrayCount(vim_bot_buffer));
 
 global u8 vim_keystroke_buffer[64];
+global u64 vim_pre_keystroke_size;
 global String_u8 vim_keystroke_text = Su8(vim_keystroke_buffer, 0, ArrayCount(vim_keystroke_buffer));
 
 // TODO(BYP): Once visual insert is more polished move these somewhere better
@@ -21,7 +22,7 @@ global History_Group vim_history_group;
 global b32 vim_visual_insert_after;
 global u32 vim_visual_insert_flags;
 
-global b32 vim_do_full_line;
+global b32 vim_do_full_line = false;
 global b32 vim_relative_numbers = true;
 global b32 vim_show_block_helper = true;
 

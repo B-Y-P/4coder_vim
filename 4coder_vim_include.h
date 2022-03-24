@@ -85,6 +85,7 @@ CUSTOM_ID(colors, defcolor_vim_chord_error);
 #include "4coder_vim_lists.cpp"
 #include "4coder_vim_search.cpp"
 
+#include "4coder_folds.hpp"
 #include "4coder_vim_commands.cpp"
 #include "4coder_vim_bindings.cpp"
 #include "4coder_vim.cpp"

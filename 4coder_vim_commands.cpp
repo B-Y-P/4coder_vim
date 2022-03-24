@@ -264,6 +264,7 @@ VIM_COMMAND_SIG(vim_lowercase){       vim_make_request(app, REQUEST_Lower); }
 VIM_COMMAND_SIG(vim_toggle_case){     vim_make_request(app, REQUEST_ToggleCase); }
 VIM_COMMAND_SIG(vim_request_indent){  vim_make_request(app, REQUEST_Indent); }
 VIM_COMMAND_SIG(vim_request_outdent){ vim_make_request(app, REQUEST_Outdent); }
+VIM_COMMAND_SIG(vim_request_fold){    vim_make_request(app, REQUEST_Fold); }
 VIM_COMMAND_SIG(vim_request_auto_indent){ vim_make_request(app, REQUEST_AutoIndent); }
 
 VIM_COMMAND_SIG(vim_toggle_char){
@@ -327,6 +328,16 @@ VIM_COMMAND_SIG(vim_digit){
 			vim_state.number += digit;
 		}
 		vim_state.chord_resolved = false;
+	}
+}
+
+VIM_COMMAND_SIG(vim_digit_del){
+	if(vim_state.number != 0){
+		vim_state.number /= 10;
+		vim_keystroke_text.size = vim_pre_keystroke_size-1;
+		vim_state.chord_resolved = false;
+	}else{
+		vim_reset_state();
 	}
 }
 
@@ -601,8 +612,9 @@ vim_combine_line_inner(Application_Links *app, View_ID view, Buffer_ID buffer, i
 }
 
 VIM_COMMAND_SIG(vim_combine_line){
-	View_ID view = get_active_view(app, Access_ReadVisible);
-	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+	View_ID view = get_active_view(app, Access_ReadWriteVisible);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
+	if(buffer == 0){ return; }
 	i64 pos = view_get_cursor_pos(app, view);
 	i64 line = buffer_compute_cursor(app, buffer, seek_pos(pos)).line;
 
@@ -879,12 +891,14 @@ CUSTOM_DOC("Vim: Saves the buffer") { save(app); }
 CUSTOM_COMMAND_SIG(wq)
 CUSTOM_DOC("Vim: Saves and quits the buffer") { save(app); close_panel(app); }
 
-
 CUSTOM_COMMAND_SIG(wqa)
 CUSTOM_DOC("Vim: Saves and quits all buffers") { save_all_dirty_buffers(app); exit_4coder(app); }
 
 CUSTOM_COMMAND_SIG(q)
-CUSTOM_DOC("Vim: Attempt to exit") { close_panel(app); }
+CUSTOM_DOC("Vim: Close panel") { close_panel(app); }
+
+CUSTOM_COMMAND_SIG(qk)
+CUSTOM_DOC("Vim: Attempt to kill buffer and close panel") { vim_try_buffer_kill(app); close_panel(app); }
 
 CUSTOM_COMMAND_SIG(qa)
 CUSTOM_DOC("Vim: Attempt to exit") { exit_4coder(app); }

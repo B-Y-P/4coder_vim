@@ -155,7 +155,8 @@ vim_begin_buffer_inner(Application_Links *app, Buffer_ID buffer_id){
 }
 
 BUFFER_HOOK_SIG(vim_begin_buffer){
-	default_begin_buffer(app, buffer_id);
+	//default_begin_buffer(app, buffer_id);
+	fold_begin_buffer_hook(app, buffer_id);
 	vim_begin_buffer_inner(app, buffer_id);
 	return 0;
 }
@@ -197,6 +198,12 @@ vim_animate_cursor(Application_Links *app, Frame_Info frame_info){
 #endif
 }
 
+BUFFER_EDIT_RANGE_SIG(vim_buffer_edit_range){
+	default_buffer_edit_range(app, buffer_id, new_range, old_cursor_range);
+	fold_buffer_edit_range_inner(app, buffer_id, new_range, old_cursor_range);
+	// TODO(BYP): Update marks here as well
+	return 0;
+}
 
 function void
 vim_tick(Application_Links *app, Frame_Info frame_info){
@@ -210,6 +217,8 @@ vim_tick(Application_Links *app, Frame_Info frame_info){
 #if VIM_DO_ANIMATE
 	vim_cursor_blink++;
 #endif
+
+	fold_tick(app, frame_info);
 
 	b32 enable_virtual_whitespace = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
 	if(enable_virtual_whitespace != def_enable_virtual_whitespace){

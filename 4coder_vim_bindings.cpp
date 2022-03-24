@@ -41,7 +41,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|MAP, undo,                                   KeyCode_U);
 	VimBind(N|MAP, undo,                              (Ctl|KeyCode_Z));
 	VimBind(N|MAP, redo,                              (Ctl|KeyCode_R));
-	VimBind(N|MAP, set_mark,                          (Ctl|KeyCode_Space));
+	VimBind(N|V|MAP, set_mark,                        (Ctl|KeyCode_Space));
 	VimBind(N|MAP, save,                              (Ctl|KeyCode_S));
 	VimBind(N|MAP, vim_open_file_in_quotes,         SUB_G, KeyCode_F);
 	VimBind(N|MAP, vim_interactive_open_or_new,   (Ctl|Sft|KeyCode_O));
@@ -90,6 +90,9 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|V|MAP, vim_toggle_case,          SUB_G, (Sft|KeyCode_Tick));
 	VimBind(N|V|MAP, vim_request_indent,              (Sft|KeyCode_Period));
 	VimBind(N|V|MAP, vim_request_outdent,             (Sft|KeyCode_Comma));
+	VimBind(N|V|MAP, vim_request_fold,              SUB_Z, KeyCode_F);
+	VimBind(N|V|MAP, fold_toggle_cursor,            SUB_Z, KeyCode_A);
+	VimBind(N|V|MAP, fold_pop_cursor,               SUB_Z, KeyCode_D);
 	VimBind(V|MAP,   vim_toggle_case,                 (Sft|KeyCode_Tick));
 	VimBind(V|MAP,   vim_lowercase,                        KeyCode_U);
 	VimBind(V|MAP,   vim_uppercase,                   (Sft|KeyCode_U));
@@ -122,6 +125,8 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|V|MAP, vim_digit,                            KeyCode_7);
 	VimBind(N|V|MAP, vim_digit,                            KeyCode_8);
 	VimBind(N|V|MAP, vim_digit,                            KeyCode_9);
+	VimBind(N|V|MAP, vim_digit_del,                        KeyCode_Backspace);
+	VimBind(N|V|MAP, vim_digit_del,                        KeyCode_Delete);
 
 	/// Movement Binds
 	VimBind(N|V|MAP, vim_left,                             KeyCode_H);
@@ -159,6 +164,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(V|MAP,   vim_block_swap,                  (Sft|KeyCode_O));
 
 	VimBind(N|MAP, vim_search_identifier,         (Ctl|Sft|KeyCode_8));
+	VimBind(N|MAP, vim_search_identifier,             (Sft|KeyCode_8));
 	VimBind(N|MAP, vim_clear_search,          SUB_Leader,  KeyCode_Space);
 	VimBind(N|MAP, vim_start_search_forward,               KeyCode_ForwardSlash);
 	VimBind(N|MAP, vim_start_search_backward,         (Sft|KeyCode_ForwardSlash));

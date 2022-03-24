@@ -42,13 +42,13 @@ vim_get_abs_block_rect(Application_Links *app, View_ID view, Buffer_ID buffer, T
 function void
 vim_block_copy(Application_Links *app, View_ID view, Buffer_ID buffer, Range_i64 range, Vim_Register *reg){
 	if(reg->flags & REGISTER_ReadOnly){
-      vim_state.chord_resolved = bitmask_2;
-      Scratch_Block scratch(app);
-      vim_set_bottom_text(push_stringf(scratch, "Register %c is Read Only", vim_get_register_char(reg)));
-      return;
-   }
-   reg->edit_type = EDIT_Block;
-   reg->flags |= (REGISTER_Set|REGISTER_Updated);
+		vim_state.chord_resolved = bitmask_2;
+		Scratch_Block scratch(app);
+		vim_set_bottom_text(push_stringf(scratch, "Register %c is Read Only", vim_get_register_char(reg)));
+		return;
+	}
+	reg->edit_type = EDIT_Block;
+	reg->flags |= (REGISTER_Set|REGISTER_Updated);
 	print_message(app, string_u8_litexpr("Block copy\n"));
 	i64 line_min = get_line_number_from_pos(app, buffer, range.min);
 	i64 line_max = get_line_number_from_pos(app, buffer, range.max);
@@ -80,8 +80,8 @@ vim_block_copy(Application_Links *app, View_ID view, Buffer_ID buffer, Range_i64
 
 		Range_i64 line_range = Ii64(min_pos, max_pos);
 		buffer_read_range(app, buffer, line_range, reg->data.str + reg->data.size);
-      buffer_post_fade(app, buffer, 0.667f, line_range, fcolor_resolve(fcolor_id(defcolor_paste)));
-      reg->data.size += (max_pos - min_pos) + 1;
+		buffer_post_fade(app, buffer, 0.667f, line_range, fcolor_resolve(fcolor_id(defcolor_paste)));
+		reg->data.size += (max_pos - min_pos) + 1;
 		reg->data.str[reg->data.size-1] = '\n';
 	}
 }
@@ -92,17 +92,17 @@ vim_block_paste(Application_Links *app, View_ID view, Buffer_ID buffer, Vim_Regi
 
 	History_Group group = history_group_begin(app, buffer);
 
-   i64 line_min = get_line_number_from_pos(app, buffer, cursor_pos);
+	i64 line_min = get_line_number_from_pos(app, buffer, cursor_pos);
 	i64 line_max = line_min-1;
 	foreach(i,reg->data.size){ line_max += reg->data.str[i] == '\n'; }
 
-   // TODO(BYP): Still doesn't handle empty lines gracefully
-   Range_i64 range = Ii64(cursor_pos, buffer_compute_cursor(app, buffer, seek_line_col(line_max, 0)).pos);
+	// TODO(BYP): Still doesn't handle empty lines gracefully
+	Range_i64 range = Ii64(cursor_pos, buffer_compute_cursor(app, buffer, seek_line_col(line_max, 0)).pos);
 	Rect_f32 block_rect = vim_get_rel_block_rect(app, view, buffer, range, line_min);
 
-   //f32 line_advance = get_face_metrics(app, get_face_id(app, buffer)).line_height - 0.01f;
+	//f32 line_advance = get_face_metrics(app, get_face_id(app, buffer)).line_height - 0.01f;
 	f32 line_advance = rect_height(block_rect)/f32(Max(1, line_max-line_min));
-   f32 wid = rect_width(block_rect);
+	f32 wid = rect_width(block_rect);
 
 	Range_i64 substring = {};
 	substring.max = -1;
@@ -140,7 +140,7 @@ vim_block_edit(Application_Links *app, View_ID view, Buffer_ID buffer, Range_i64
 	{
 		if(vim_state.params.selected_reg){
 			vim_block_copy(app, view, buffer, range, vim_state.params.selected_reg);
-         vim_update_registers(app);
+			vim_update_registers(app);
 			vim_state.params.selected_reg = 0;
 		}
 		if(params->request == REQUEST_Yank){ return; }
@@ -154,7 +154,7 @@ vim_block_edit(Application_Links *app, View_ID view, Buffer_ID buffer, Range_i64
 
 	f32 line_advance = rect_height(block_rect)/f32(Max(1, line_max-line_min));
 	f32 wid = rect_width(block_rect);
-   block_rect = rect_inner(block_rect, -0.1f);
+	block_rect = rect_inner(block_rect, -0.1f);
 
 	for(i64 i=line_max; i>=line_min; i--){
 		if(line_is_valid_and_blank(app, buffer, i)){ continue; }
@@ -163,9 +163,9 @@ vim_block_edit(Application_Links *app, View_ID view, Buffer_ID buffer, Range_i64
 		i64 min_pos = view_pos_at_relative_xy(app, view, line_min, min_point);
 		i64 max_pos = view_pos_at_relative_xy(app, view, line_min, max_point);
 
-      Vec2_f32 min_p = view_relative_xy_of_pos(app, view, line_min, min_pos);
-      Vec2_f32 max_p = view_relative_xy_of_pos(app, view, line_min, max_pos);
-      if(!rect_contains_point(block_rect, min_p) || !rect_contains_point(block_rect, max_p)){ continue; }
+		Vec2_f32 min_p = view_relative_xy_of_pos(app, view, line_min, min_pos);
+		Vec2_f32 max_p = view_relative_xy_of_pos(app, view, line_min, max_pos);
+		if(!rect_contains_point(block_rect, min_p) || !rect_contains_point(block_rect, max_p)){ continue; }
 
 		Range_i64 line_range = Ii64(min_pos, max_pos+1);
 
