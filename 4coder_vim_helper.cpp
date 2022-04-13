@@ -152,6 +152,9 @@ Vim_Motion_Block::~Vim_Motion_Block(){
 	}
 
 	if(params->request == REQUEST_Yank || (params->request != REQUEST_None && clamp_end > 0)){
+		Vec2_f32 v0 = view_relative_xy_of_pos(app, view, 0, begin_pos);
+		Vec2_f32 v1 = view_relative_xy_of_pos(app, view, 0, end_pos);
+		vim_nxt_cursor_pos += 2.f*(v1 - v0);
 		view_set_cursor_and_preferred_x(app, view, seek_pos(end_pos = begin_pos));
 	}
 
