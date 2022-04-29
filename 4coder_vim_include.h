@@ -77,8 +77,8 @@ CUSTOM_ID(colors, defcolor_vim_chord_error);
 #include "4coder_vim.h"
 
 #include "4coder_vim_block.cpp"
-#include "4coder_vim_registers.cpp"
 #include "4coder_vim_helper.cpp"
+#include "4coder_vim_registers.cpp"
 #include "4coder_vim_movement.cpp"
 
 #include "4coder_vim_lister.cpp"

@@ -138,9 +138,12 @@ vim_paste(Application_Links *app, View_ID view, Buffer_ID buffer, Vim_Register *
 }
 
 
-CONSUME_NEXT_KEYSTROKE_SIG(vim_select_register_consume){
+VIM_COMMAND_SIG(vim_select_register){
+	vim_is_selecting_register = true;
+	u8 c = vim_query_user_key(app, string_u8_litexpr("-- SELECT REGISTER --"));
+	vim_is_selecting_register = false;
+	if(c == 0){ return; }
 	Vim_Register *reg = vim_state.params.selected_reg;
-	u8 c = vim_state.params.consume_char;
 	u32 append = 0;
 
 	if(0){}

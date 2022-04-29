@@ -314,41 +314,8 @@ vim_handle_input(Application_Links *app, Input_Event *event){
 	}
 
 
-	if(vim_state.params.consume_next_key != 0){
-		if(event->kind == InputEventKind_KeyStroke){
-			if(event->key.code == KeyCode_Escape){
-				vim_reset_state();
-				return true;
-			}else{
-				event->kind = InputEventKind_None;
-				return false;
-			}
-		}
-		else if(event->kind == InputEventKind_TextInsert){
-			String_Const_u8 text = to_writable(event);
-			if(text.str && text.size > 0){
-				vim_state.chord_resolved = true;
-				string_append_character(&vim_keystroke_text, text.str[0]);
-				vim_state.params.consume_char = text.str[0];
-				vim_state.active_command = vim_state.params.command = vim_state.params.consume_next_key;
-
-				vim_state.params.consume_next_key(app);
-
-				vim_state.active_command = 0;
-				vim_state.params.consume_next_key = 0;
-				return true;
-			}
-		}
-	}
-
-
 	bool result = false;
 	if(event->kind == InputEventKind_KeyStroke){
-
-		if(vim_state.params.consume_next_key != 0){
-			event->kind = InputEventKind_None;
-			return false;
-		}
 
 		/// Translate the KeyCode
 		Key_Code code = event->key.code;
@@ -383,7 +350,6 @@ vim_handle_input(Application_Links *app, Input_Event *event){
 
 				// Post command stuff
 				vim_state.active_command = 0;
-				if(vim_state.params.consume_next_key != 0){ vim_state.chord_resolved = false; }
 
 				result = true;
 			}
@@ -415,6 +381,9 @@ vim_handle_input(Application_Links *app, Input_Event *event){
 
 function String_Const_u8 vim_get_bot_string(){
 	String_Const_u8 result = vim_bot_text.string;
+
+	if(vim_is_querying_user_key){ return result; }
+
 	switch(vim_state.mode){
 		case VIM_Insert:        result = string_u8_litexpr("-- INSERT --"); break;
 		case VIM_Replace:       result = string_u8_litexpr("-- REPLACE --"); break;
@@ -427,17 +396,6 @@ function String_Const_u8 vim_get_bot_string(){
 			}
 		} break;
 	}
-
-	Consume_Next_Key *consume = vim_state.params.consume_next_key;
-	if(0){}
-	else if(consume == vim_replace_next_consume)       result = string_u8_litexpr("-- REPLACE NEXT --");
-	else if(consume == vim_replace_range_next_consume) result = string_u8_litexpr("-- RANGE REPLACE NEXT --");
-	else if(consume == vim_seek_char_consume)          result = string_u8_litexpr("-- SEEK NEXT --");
-	else if(consume == vim_text_object_consume)        result = string_u8_litexpr("-- TEXT OBJECT --");
-	else if(consume == vim_select_register_consume)    result = string_u8_litexpr("-- SELECT REGISTER --");
-	else if(consume == vim_start_macro_consume)        result = string_u8_litexpr("-- SELECT MACRO TO RECORD --");
-	else if(consume == vim_play_macro_consume)         result = string_u8_litexpr("-- SELECT MACRO TO PLAY --");
-	else{}
 
 	if(vim_state.macro_char){
 		local_persist u8 macro_string_buffer[] = "-- RECORDING   --";

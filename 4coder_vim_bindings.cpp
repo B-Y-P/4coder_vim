@@ -193,8 +193,8 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|V|MAP, vim_set_mark,                         KeyCode_M);
 	VimBind(N|V|MAP, vim_goto_mark,                        KeyCode_Tick);
 	VimBind(N|V|MAP, vim_goto_mark,                        KeyCode_Quote);
-	VimBind(N|MAP,   vim_toggle_macro,                     KeyCode_Q);
-	VimBind(N|MAP,   vim_play_macro,                  (Sft|KeyCode_2));
+	VimBind(N|V|MAP, vim_toggle_macro,                     KeyCode_Q);
+	VimBind(N|V|MAP, vim_play_macro,                  (Sft|KeyCode_2));
 
 	/// Window Binds (TODO(BYP): Do the rest of these, and do them properly)
 	VimBind(N|MAP, change_active_panel_backwards,     (Ctl|KeyCode_H));

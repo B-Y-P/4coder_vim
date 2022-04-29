@@ -3,6 +3,43 @@ CUSTOM_COMMAND_SIG(no_op)
 CUSTOM_DOC("no op for binding keybinds to resolve without side effect")
 {}
 
+// Blocking call
+function u8 vim_query_user_key(Application_Links *app, String_Const_u8 message){
+	u8 result = 0;
+
+	local_persist u8 vim_bot_temp_buffer[256];
+	u64 size = vim_bot_text.size;
+	block_copy(vim_bot_temp_buffer, vim_bot_text.str, size);
+	vim_set_bottom_text(message);
+	vim_is_querying_user_key = true;
+	vim_state.chord_resolved = false;
+
+	for(;;){
+		User_Input in = get_next_input(app, EventPropertyGroup_Any, EventProperty_Escape);
+		if(in.abort){ break; }
+		if(in.event.kind == InputEventKind_TextInsert){
+			result = in.event.text.string.str[0];
+			string_append_character(&vim_keystroke_text, result);
+			break;
+		}
+		else if(in.event.kind == InputEventKind_KeyStroke){
+			in.event.kind = InputEventKind_None;
+			leave_current_input_unhandled(app);
+		}
+		else{
+			leave_current_input_unhandled(app);
+		}
+	}
+
+	vim_set_bottom_text(i32(size), (char *)vim_bot_temp_buffer);
+	vim_is_querying_user_key = false;
+	vim_state.chord_resolved = true;
+	Scratch_Block scratch(app);
+	printf_message(app, scratch, "User key was '%c' \n", result);
+	return result;
+}
+
+
 function void vim_enter_insert_mode(Application_Links *app){
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);

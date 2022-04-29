@@ -12,6 +12,8 @@ global Vim_Global_Mark vim_global_marks[26];
 
 global u8 vim_bot_buffer[256];
 global String_u8 vim_bot_text = Su8(vim_bot_buffer, 0, ArrayCount(vim_bot_buffer));
+global bool vim_is_querying_user_key;
+global bool vim_is_selecting_register;
 
 global u8 vim_keystroke_buffer[64];
 global u64 vim_pre_keystroke_size;

@@ -196,7 +196,7 @@ vim_draw_cursor(Application_Links *app, View_ID view, b32 is_active_view, Buffer
 
 			Rect_f32 rect = text_layout_character_on_screen(app, text_layout_id, cursor_pos);
 
-			if(ACTIVE_BLINK(vim_cursor_blink) && vim_state.params.consume_next_key != vim_select_register_consume){
+			if(ACTIVE_BLINK(vim_cursor_blink) && !vim_is_selecting_register){
 				if(vim_state.mode == VIM_Insert){ rect = rect_split_top_bottom_neg(rect, 5.f).b; }
 				//if(vim_state.mode == VIM_Insert){ rect = rect_split_left_right(rect, 2.f).a; }
 				if(rect.p1 != V2f32(0,0)){
@@ -229,7 +229,7 @@ vim_draw_cursor(Application_Links *app, View_ID view, b32 is_active_view, Buffer
 
 function void
 vim_draw_after_text(Application_Links *app, View_ID view, b32 is_active_view, Buffer_ID buffer, Text_Layout_ID text_layout_id, f32 cursor_roundness, f32 mark_thickness){
-	if(is_active_view && vim_state.params.consume_next_key == vim_select_register_consume && vim_state.mode == VIM_Insert){
+	if(is_active_view && vim_is_selecting_register && vim_state.mode == VIM_Insert){
 		i64 cursor_pos = view_get_cursor_pos(app, view);
 		Rect_f32 cursor_rect = text_layout_character_on_screen(app, text_layout_id, cursor_pos);
 		draw_rectangle_fcolor(app, cursor_rect, 0.f, fcolor_id(defcolor_back));

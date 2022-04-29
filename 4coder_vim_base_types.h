@@ -16,10 +16,6 @@ typedef Range_i64 Vim_Text_Object_Func(Application_Links *app, Buffer_ID buffer,
 // NOTE: Same as CUSTOM_COMMAND_SIG but won't clutter command lister
 #define VIM_COMMAND_SIG(name) function void name(Application_Links *app)
 
-// NOTE: These functions expect vim_state.params.consume_char to be set
-#define CONSUME_NEXT_KEYSTROKE_SIG(name) void name(Application_Links *app)
-typedef void Consume_Next_Key(Application_Links *app);
-
 struct Vim_Text_Object{
 	u8 character;
 	Vim_Text_Object_Func *func;
@@ -109,7 +105,6 @@ struct Vim_Params{
 	Vim_Register *selected_reg;
 	u8 consume_char;
 	b8 do_insert;
-	Consume_Next_Key *consume_next_key;
 	Custom_Command_Function *command;
 };
 

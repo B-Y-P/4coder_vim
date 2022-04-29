@@ -120,7 +120,12 @@ VIM_COMMAND_SIG(vim_insert_end){ vim_end_line(app); vim_insert_mode_after(app); 
 VIM_COMMAND_SIG(vim_modal_i){
 	if(vim_state.mode == VIM_Visual || vim_state.params.request != REQUEST_None){
 		vim_state.params.clusivity = VIM_Exclusive;
-		vim_state.params.consume_next_key = vim_text_object_consume;
+		u8 key = vim_query_user_key(app, string_u8_litexpr("-- TEXT OBJECT --"));
+		if(key){
+			vim_state.params.seek.character = key;
+			vim_state.active_command = vim_text_object;
+			vim_text_object(app);
+		}
 	}
 	else{ vim_insert_mode(app); }
 }
@@ -128,7 +133,12 @@ VIM_COMMAND_SIG(vim_modal_i){
 VIM_COMMAND_SIG(vim_modal_a){
 	if(vim_state.mode == VIM_Visual || vim_state.params.request != REQUEST_None){
 		vim_state.params.clusivity = VIM_Inclusive;
-		vim_state.params.consume_next_key = vim_text_object_consume;
+		u8 key = vim_query_user_key(app, string_u8_litexpr("-- TEXT OBJECT --"));
+		if(key){
+			vim_state.params.seek.character = key;
+			vim_state.active_command = vim_text_object;
+			vim_text_object(app);
+		}
 	}
 	else{ vim_insert_mode_after(app); }
 }
@@ -228,32 +238,23 @@ VIM_COMMAND_SIG(vim_submode_g){ vim_state.sub_mode = SUB_G; vim_state.chord_reso
 VIM_COMMAND_SIG(vim_submode_z){ vim_state.sub_mode = SUB_Z; vim_state.chord_resolved = false; }
 VIM_COMMAND_SIG(vim_submode_leader){ vim_state.sub_mode = SUB_Leader; vim_state.chord_resolved = false; }
 
-
-CONSUME_NEXT_KEYSTROKE_SIG(vim_replace_next_consume){
-	View_ID view = get_active_view(app, Access_ReadVisible);
-	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
-	i64 pos = view_get_cursor_pos(app, view);
-	buffer_replace_range(app, buffer, Ii64(pos, pos+1), SCu8(&vim_state.params.consume_char, 1));
-}
-
 VIM_COMMAND_SIG(vim_replace_next_char){
-	vim_state.params.consume_next_key = vim_replace_next_consume;
-}
-
-
-CONSUME_NEXT_KEYSTROKE_SIG(vim_replace_range_next_consume){
-	if(vim_state.mode == VIM_Visual){
-		vim_state.params.seek.character = vim_state.params.consume_char;
-		vim_make_request(app, REQUEST_Replace);
+	u8 key = vim_query_user_key(app, string_u8_litexpr("-- REPLACE NEXT --"));
+	if(key){
+		View_ID view = get_active_view(app, Access_ReadVisible);
+		Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+		i64 pos = view_get_cursor_pos(app, view);
+		buffer_replace_range(app, buffer, Ii64(pos, pos+1), SCu8(&key, 1));
 	}
 }
 
-VIM_COMMAND_SIG(vim_replace_range_next){
-	vim_state.params.consume_next_key = vim_replace_range_next_consume;
-}
 
-VIM_COMMAND_SIG(vim_select_register){
-	vim_state.params.consume_next_key = vim_select_register_consume;
+VIM_COMMAND_SIG(vim_replace_range_next){
+	u8 key = vim_query_user_key(app, string_u8_litexpr("-- RANGE REPLACE NEXT --"));
+	if(key){
+		vim_state.params.seek.character = key;
+		vim_make_request(app, REQUEST_Replace);
+	}
 }
 
 VIM_COMMAND_SIG(vim_request_yank){    vim_make_request(app, REQUEST_Yank); }
@@ -639,12 +640,12 @@ VIM_COMMAND_SIG(vim_combine_line){
 }
 
 
-CONSUME_NEXT_KEYSTROKE_SIG(vim_set_mark_consume){
+VIM_COMMAND_SIG(vim_set_mark){
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	i64 pos = view_get_cursor_pos(app, view);
 	Scratch_Block scratch(app);
-	u8 character = vim_state.params.consume_char;
+	u8 character = vim_query_user_key(app, string_u8_litexpr("-- SET MARK NEXT --"));
 	if(in_range('a', character, 'z'+1)){
 		Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 		i64 *marks = (i64 *)managed_scope_get_attachment(app, scope, vim_buffer_marks, 26*sizeof(i64));
@@ -659,10 +660,16 @@ CONSUME_NEXT_KEYSTROKE_SIG(vim_set_mark_consume){
 	}
 }
 
-CONSUME_NEXT_KEYSTROKE_SIG(vim_goto_mark_consume){
+VIM_COMMAND_SIG(vim_goto_mark){
+	User_Input input = get_current_input(app);
+	if(input.event.kind == InputEventKind_KeyStroke){
+		if(input.event.key.code == KeyCode_Tick){
+			vim_state.params.edit_type = EDIT_LineWise;
+		}
+	}
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
-	u8 c = vim_state.params.consume_char;
+	u8 c = vim_query_user_key(app, string_u8_litexpr("-- GOTO MARK NEXT --"));
 	if(in_range('a', c, 'z'+1)){
 		Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 		i64 *marks = (i64 *)managed_scope_get_attachment(app, scope, vim_buffer_marks, 26*sizeof(i64));
@@ -709,21 +716,6 @@ CONSUME_NEXT_KEYSTROKE_SIG(vim_goto_mark_consume){
 	}
 }
 
-VIM_COMMAND_SIG(vim_set_mark){
-	vim_state.params.consume_next_key = vim_set_mark_consume;
-	vim_state.chord_resolved = false;
-}
-
-VIM_COMMAND_SIG(vim_goto_mark){
-	User_Input input = get_current_input(app);
-	if(input.event.kind == InputEventKind_KeyStroke){
-		if(input.event.key.code == KeyCode_Tick){
-			vim_state.params.edit_type = EDIT_LineWise;
-		}
-	}
-	vim_state.params.consume_next_key = vim_goto_mark_consume;
-	vim_state.chord_resolved = false;
-}
 
 VIM_COMMAND_SIG(vim_open_file_in_quotes){
 	vim_push_jump(app, get_active_view(app, Access_ReadVisible));
@@ -834,19 +826,27 @@ function i32 vim_macro_index(u8 c){
 	return((character_to_lower(c) - 'a') + 26*in_range('A', c, 'Z'+1));
 }
 
-CONSUME_NEXT_KEYSTROKE_SIG(vim_start_macro_consume){
-	if(vim_state.macro_char){ return; }
-
-	u8 c = vim_state.params.consume_char;
-	if(in_range('a', c, 'z'+1) || in_range('A', c, 'Z'+1)){
-		vim_state.macro_char = c;
-		i32 index = vim_macro_index(c);
-		vim_macros[index].min = buffer_get_size(app, get_keyboard_log_buffer(app));
+VIM_COMMAND_SIG(vim_toggle_macro){
+	if(vim_state.macro_char){
+		Buffer_ID buffer = get_keyboard_log_buffer(app);
+		i64 end = buffer_get_size(app, buffer);
+		Buffer_Cursor cursor = buffer_compute_cursor(app, buffer, seek_pos(end));
+		Buffer_Cursor back_cursor = buffer_compute_cursor(app, buffer, seek_line_col(cursor.line - 1, 1));
+		vim_macros[vim_macro_index(vim_state.macro_char)].max = back_cursor.pos;
+		vim_state.macro_char = 0;
+	}else{
+		if(vim_state.macro_char){ return; }
+		u8 c = vim_query_user_key(app, string_u8_litexpr("-- SELECT MACRO TO RECORD --"));
+		if(in_range('a', c, 'z'+1) || in_range('A', c, 'Z'+1)){
+			vim_state.macro_char = c;
+			i32 index = vim_macro_index(c);
+			vim_macros[index].min = buffer_get_size(app, get_keyboard_log_buffer(app));
+		}
 	}
 }
 
-CONSUME_NEXT_KEYSTROKE_SIG(vim_play_macro_consume){
-	u8 c = vim_state.params.consume_char;
+VIM_COMMAND_SIG(vim_play_macro){
+	u8 c = vim_query_user_key(app, string_u8_litexpr("-- SELECT MACRO TO PLAY --"));
 	if(c == '@'){ c = vim_state.prev_macro; }
 	if(in_range('a', c, 'z'+1) || in_range('A', c, 'Z'+1)){
 		i32 index = vim_macro_index(c);
@@ -859,25 +859,6 @@ CONSUME_NEXT_KEYSTROKE_SIG(vim_play_macro_consume){
 		String_Const_u8 macro = push_buffer_range(app, scratch, key_buffer, range);
 		keyboard_macro_play(app, macro);
 	}
-}
-
-VIM_COMMAND_SIG(vim_toggle_macro){
-	if(vim_state.macro_char){
-		Buffer_ID buffer = get_keyboard_log_buffer(app);
-		i64 end = buffer_get_size(app, buffer);
-		Buffer_Cursor cursor = buffer_compute_cursor(app, buffer, seek_pos(end));
-		Buffer_Cursor back_cursor = buffer_compute_cursor(app, buffer, seek_line_col(cursor.line - 1, 1));
-		vim_macros[vim_macro_index(vim_state.macro_char)].max = back_cursor.pos;
-		vim_state.macro_char = 0;
-	}else{
-		vim_state.params.consume_next_key = vim_start_macro_consume;
-		vim_state.chord_resolved = false;
-	}
-}
-
-VIM_COMMAND_SIG(vim_play_macro){
-	vim_state.params.consume_next_key = vim_play_macro_consume;
-	vim_state.chord_resolved = false;
 }
 
 VIM_COMMAND_SIG(vim_insert_command);

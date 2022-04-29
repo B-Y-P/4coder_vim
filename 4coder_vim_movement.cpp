@@ -299,19 +299,18 @@ function void vim_seek_char(Application_Links *app){
 	}
 }
 
-CONSUME_NEXT_KEYSTROKE_SIG(vim_seek_char_consume){
-	vim_state.params.seek.character = vim_state.params.consume_char;
-	vim_state.active_command = vim_seek_char;
-	vim_seek_char(app);
-}
-
 VIM_COMMAND_SIG(vim_set_seek_char){
 	User_Input input = get_current_input(app);
 	if(input.event.kind == InputEventKind_KeyStroke){
 		vim_state.params.seek.clusivity = (input.event.key.code == KeyCode_T ? VIM_Exclusive : VIM_Inclusive);
 		vim_state.params.seek.direction = (has_modifier(&input.event, KeyCode_Shift) ? -1 : 1);
-		vim_state.params.consume_next_key = vim_seek_char_consume;
-		vim_state.chord_resolved = false;
+
+		u8 key = vim_query_user_key(app, string_u8_litexpr("-- SEEK NEXT --"));
+		if(key){
+			vim_state.params.seek.character = key;
+			vim_state.active_command = vim_seek_char;
+			vim_seek_char(app);
+		}
 	}
 }
 
@@ -450,7 +449,7 @@ VIM_TEXT_OBJECT_SIG(vim_object_WORD){
 // I have chosen to ignore this, since it's both easier, and aligns better with expectation
 VIM_TEXT_OBJECT_SIG(vim_scan_object_quotes){
 	Range_i64 range = {};
-	u8 character = vim_state.params.consume_char;
+	u8 character = vim_state.params.seek.character;
 	Range_i64 line_range = get_line_range_from_pos(app, buffer, cursor_pos);
 	if(range_size(line_range) >= 2){
 		Scratch_Block scratch(app);
@@ -500,11 +499,12 @@ VIM_TEXT_OBJECT_SIG(vim_scan_object_quotes){
 
 // NOTE(BYP): Default vim behavior for Visual Block on Text Objects is to do nothing.
 // I have chosen to ignore this, since it takes exactly no effort on my part to make it work.
-CONSUME_NEXT_KEYSTROKE_SIG(vim_text_object_consume){
+function void vim_text_object(Application_Links *app){
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	i64 cursor_pos = view_get_cursor_pos(app, view);
-	u8 character = vim_state.params.consume_char;
+	u8 character = vim_state.params.seek.character;
+	Vim_Clusivity object_clusivity = vim_state.params.clusivity;
 
 	Range_i64 range = {};
 
@@ -546,10 +546,13 @@ CONSUME_NEXT_KEYSTROKE_SIG(vim_text_object_consume){
 
 	if(range.min && range.max){
 		vim_push_jump(app, view);
-		Vim_Motion_Block vim_motion_block(app, range.max);
-		vim_state.params.clusivity = VIM_Inclusive;
-		view_set_cursor_and_preferred_x(app, view, seek_pos(range.min));
-		view_set_mark(app, view, seek_pos(range.max));
+		{
+			Vim_Motion_Block vim_motion_block(app, range.max);
+			vim_state.params.clusivity = VIM_Inclusive;
+			view_set_cursor_and_preferred_x(app, view, seek_pos(range.min));
+			view_set_mark(app, view, seek_pos(range.max));
+		}
+		vim_state.prev_params.clusivity = object_clusivity;
 	}else{
 		vim_reset_state();
 	}
