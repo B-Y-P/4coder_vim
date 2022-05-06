@@ -12,27 +12,27 @@ function i64 vim_pattern_inner_v(Application_Links *app, Buffer_Seek_String_Flag
 }
 
 function void vim_in_pattern_inner(Application_Links *app, Buffer_Seek_String_Flags seek_flags){
-   String_u8 *pattern = &vim_registers.search.data;
-   i64 new_pos = vim_pattern_inner_v(app, seek_flags);
-   View_ID view = get_active_view(app, Access_ReadVisible);
+	String_u8 *pattern = &vim_registers.search.data;
+	i64 new_pos = vim_pattern_inner_v(app, seek_flags);
+	View_ID view = get_active_view(app, Access_ReadVisible);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
-   i64 buffer_size = buffer_get_size(app, buffer);
-   if(new_pos > 0 && new_pos != buffer_size){
+	i64 buffer_size = buffer_get_size(app, buffer);
+	if(new_pos > 0 && new_pos != buffer_size){
 		vim_push_jump(app, view);
-      Vim_Motion_Block vim_motion_block(app, new_pos + pattern->size-1);
-      view_set_cursor_and_preferred_x(app, view, seek_pos(new_pos));
+		Vim_Motion_Block vim_motion_block(app, new_pos + pattern->size-1);
+		view_set_cursor_and_preferred_x(app, view, seek_pos(new_pos));
 	}
 }
 
 function void vim_to_pattern_inner(Application_Links *app, Buffer_Seek_String_Flags seek_flags){
-   View_ID view = get_active_view(app, Access_ReadVisible);
+	View_ID view = get_active_view(app, Access_ReadVisible);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
-   i64 buffer_size = buffer_get_size(app, buffer);
-   i64 new_pos = vim_pattern_inner_v(app, seek_flags);
-   if(new_pos > 0 && new_pos != buffer_size){
+	i64 buffer_size = buffer_get_size(app, buffer);
+	i64 new_pos = vim_pattern_inner_v(app, seek_flags);
+	if(new_pos > 0 && new_pos != buffer_size){
 		vim_push_jump(app, view);
-      Vim_Motion_Block vim_motion_block(app);
-      view_set_cursor_and_preferred_x(app, view, seek_pos(new_pos));
+		Vim_Motion_Block vim_motion_block(app);
+		view_set_cursor_and_preferred_x(app, view, seek_pos(new_pos));
 	}
 }
 
@@ -58,7 +58,7 @@ vim_start_search_inner(Application_Links *app, Scan_Direction start_direction){
 
 	/// TODO(BYP): Need a better system to have multiple types of these drawing
 	vim_use_bottom_cursor = true;
-   String_Const_u8 prefix = SCu8(start_direction == Scan_Forward ? "/" : "?");
+	String_Const_u8 prefix = SCu8(start_direction == Scan_Forward ? "/" : "?");
 	vim_set_bottom_text(prefix);
 	u8 *dest = vim_bot_text.str + vim_bot_text.size;
 	u64 base_size, after_size;
@@ -66,7 +66,7 @@ vim_start_search_inner(Application_Links *app, Scan_Direction start_direction){
 
 	Vim_Register *reg = &vim_registers.search;
 	if(reg->data.size < 256){ vim_realloc_string(&reg->data, 0); }
-   reg->data.size = 0;
+	reg->data.size = 0;
 	String_u8 *query = &reg->data;
 
 	f32 prev_offset = vim_nxt_filebar_offset;
@@ -76,8 +76,8 @@ vim_start_search_inner(Application_Links *app, Scan_Direction start_direction){
 	for(;;){
 		if(vim_nxt_filebar_offset == 0.f){ vim_nxt_filebar_offset = 0.1f; }
 		animate_in_n_milliseconds(app, 0);
-      vim_set_bottom_text(prefix);
-      block_copy(dest, query->str, query->size);
+		vim_set_bottom_text(prefix);
+		block_copy(dest, query->str, query->size);
 		vim_bot_text.size = after_size + query->size;
 
 		in = get_next_input(app, EventPropertyGroup_Any, EventProperty_Escape);
@@ -87,8 +87,8 @@ vim_start_search_inner(Application_Links *app, Scan_Direction start_direction){
 
 		b32 string_change = false;
 		if(match_key_code(&in, KeyCode_Return)){
-         reg->flags |= (REGISTER_Set|REGISTER_Updated);
-         break;
+			reg->flags |= (REGISTER_Set|REGISTER_Updated);
+			break;
 		}
 		else if(string.str != 0 && string.size > 0){
 			string_append(query, string);
@@ -96,14 +96,14 @@ vim_start_search_inner(Application_Links *app, Scan_Direction start_direction){
 		}
 		else if(match_key_code(&in, KeyCode_Backspace)){
 			u64 old_size = query->size;
-			if(is_unmodified_key(&in.event)){
-				query->string = backspace_utf8(query->string);
-			}else if(has_modifier(&in.event.key.modifiers, KeyCode_Control)){
+			if(has_modifier(&in.event.key.modifiers, KeyCode_Control)){
 				if(has_modifier(&in.event.key.modifiers, KeyCode_Shift)){
 					query->string.size = 0;
 				}else{
 					query->string = ctrl_backspace_utf8(query->string);
 				}
+			}else{
+				query->string = backspace_utf8(query->string);
 			}
 			string_change = old_size != query->size;
 		}
@@ -111,8 +111,8 @@ vim_start_search_inner(Application_Links *app, Scan_Direction start_direction){
 
 		b32 do_scan_action = false;
 		if(string_change){
-         reg->flags |= (REGISTER_Set|REGISTER_Updated);
-         vim_update_registers(app);
+			reg->flags |= (REGISTER_Set|REGISTER_Updated);
+			vim_update_registers(app);
 			i64 new_pos = 0;
 			switch(direction){
 				case Scan_Forward:{
@@ -165,15 +165,15 @@ vim_start_search_inner(Application_Links *app, Scan_Direction start_direction){
 	view_disable_highlight_range(app, view);
 
 	vim_reset_bottom_text();
-   vim_use_bottom_cursor = false;
+	vim_use_bottom_cursor = false;
 	vim_nxt_filebar_offset = prev_offset;
 	view_set_camera_bounds(app, view, old_margin, old_push_in);
 }
 
 VIM_COMMAND_SIG(vim_clear_search){
-   vim_registers.search.data.size = 0;
-   vim_registers.search.flags &= (~REGISTER_Set);
-   vim_update_registers(app);
+	vim_registers.search.data.size = 0;
+	vim_registers.search.flags &= (~REGISTER_Set);
+	vim_update_registers(app);
 }
 
 VIM_COMMAND_SIG(vim_start_search_forward){  vim_start_search_inner(app, Scan_Forward); }
@@ -192,6 +192,6 @@ VIM_COMMAND_SIG(vim_search_identifier){
 	Range_i64 range = enclose_pos_alpha_numeric_underscore(app, buffer, pos);
 	vim_state.params.selected_reg = &vim_registers.search;
 	vim_request_vtable[REQUEST_Yank](app, view, buffer, range);
-   vim_default_register();
+	vim_default_register();
 }
 
