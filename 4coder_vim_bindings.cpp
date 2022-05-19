@@ -10,15 +10,15 @@ function void vim_map_set_binding(u32 mode, u32 sub_mode, void *func, u64 key){
 	if(mode & bit_3){ table_insert(vim_maps + 2 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
 }
 function void VimBind(u32 mode, Custom_Command_Function *custom, Vim_Sub_Mode sub_mode, u64 key){
-	vim_map_set_binding(mode, sub_mode, custom, key);
+	vim_map_set_binding(mode, sub_mode,(void *) custom, key);
 }
 function void VimBind(u32 mode, Custom_Command_Function *custom, u64 key){
-	vim_map_set_binding(mode, SUB_None, custom, key);
+	vim_map_set_binding(mode, SUB_None, (void *)custom, key);
 }
 
 
 function void vim_default_bindings(Application_Links *app, Key_Code leader){
-
+  
 	// Normal, Insert, Visual
 	// These could be local variables but I like the highlighting
 #define N bit_1
@@ -28,7 +28,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	u32 Ctl = KeyMod_Ctl;
 	u32 Sft = KeyMod_Sft;
 	u32 Alt = KeyMod_Alt;
-
+  
 	VimBind(MAP, vim_normal_mode,                          KeyCode_Escape);
 	VimBind(MAP, vim_inc_buffer_peek,                 (Ctl|KeyCode_RightBracket));
 	VimBind(MAP, vim_dec_buffer_peek,                 (Ctl|KeyCode_LeftBracket));
@@ -36,7 +36,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(MAP, vim_toggle_show_buffer_peek,     (Ctl|Sft|KeyCode_Return));
 	VimBind(MAP, vim_scoll_buffer_peek_up,        (Ctl|Sft|KeyCode_U));
 	VimBind(MAP, vim_scoll_buffer_peek_down,      (Ctl|Sft|KeyCode_D));
-
+  
 	/// Rebinds
 	VimBind(N|MAP, undo,                                   KeyCode_U);
 	VimBind(N|MAP, undo,                              (Ctl|KeyCode_Z));
@@ -54,7 +54,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|I|MAP, swap_panels,                     (Ctl|KeyCode_2));
 	VimBind(I|MAP, word_complete_drop_down,           (Ctl|KeyCode_N));
 	//VimBind(I|MAP, word_complete_drop_down,           (Ctl|KeyCode_P));
-
+  
 	/// Mode Binds
 	VimBind(N|V|MAP, vim_modal_i,                          KeyCode_I);
 	VimBind(N|V|MAP, vim_modal_a,                          KeyCode_A);
@@ -71,12 +71,12 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(V|MAP,   vim_visual_insert,               (Sft|KeyCode_A));
 	VimBind(V|MAP,   vim_visual_insert,               (Sft|KeyCode_I));
 	VimBind(I|MAP,   vim_insert_command,          (Ctl|Sft|KeyCode_O));
-
+  
 	/// Sub Mode Binds
 	VimBind(N|V|MAP, vim_submode_g,                        KeyCode_G);
 	VimBind(N|V|MAP, vim_submode_z,                        KeyCode_Z);
 	VimBind(N|V|MAP, vim_submode_leader,                   leader);
-
+  
 	/// Request Binds
 	VimBind(N|V|MAP, vim_request_yank,                     KeyCode_Y);
 	VimBind(N|V|MAP, vim_request_delete,                   KeyCode_D);
@@ -97,7 +97,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(V|MAP,   vim_lowercase,                        KeyCode_U);
 	VimBind(V|MAP,   vim_uppercase,                   (Sft|KeyCode_U));
 	VimBind(V|MAP,   vim_replace_range_next,               KeyCode_R);
-
+  
 	/// Edit Binds
 	VimBind(N|MAP,   vim_paste_before,               (Sft|KeyCode_P));
 	VimBind(N|MAP,   vim_paste_after,                     KeyCode_P);
@@ -113,7 +113,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(I|MAP,   vim_delete_to_begin,             (Ctl|KeyCode_U));
 	VimBind(V|MAP,   vim_move_selection_up,           (Alt|KeyCode_K));
 	VimBind(V|MAP,   vim_move_selection_down,         (Alt|KeyCode_J));
-
+  
 	/// Digit Binds
 	VimBind(N|V|MAP, vim_modal_0,                          KeyCode_0);
 	VimBind(N|V|MAP, vim_digit,                            KeyCode_1);
@@ -127,7 +127,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|V|MAP, vim_digit,                            KeyCode_9);
 	VimBind(N|V|MAP, vim_digit_del,                        KeyCode_Backspace);
 	VimBind(N|V|MAP, vim_digit_del,                        KeyCode_Delete);
-
+  
 	/// Movement Binds
 	VimBind(N|V|MAP, vim_left,                             KeyCode_H);
 	VimBind(N|V|MAP, vim_down,                             KeyCode_J);
@@ -143,7 +143,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|V|MAP, vim_forward_END,                 (Sft|KeyCode_E));
 	VimBind(N|V|MAP, vim_backward_end,         SUB_G,      KeyCode_E);
 	VimBind(N|V|MAP, vim_backward_END,         SUB_G, (Sft|KeyCode_E));
-
+  
 	VimBind(N|V|MAP, vim_file_top,                  SUB_G, KeyCode_G);
 	VimBind(N|V|MAP, vim_goto_line,                   (Sft|KeyCode_G));
 	VimBind(N|V|MAP, vim_goto_column,                 (Sft|KeyCode_BackwardSlash));
@@ -162,7 +162,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|V|MAP, vim_screen_mid,                  (Sft|KeyCode_M));
 	VimBind(V|MAP,   cursor_mark_swap,                     KeyCode_O);
 	VimBind(V|MAP,   vim_block_swap,                  (Sft|KeyCode_O));
-
+  
 	VimBind(N|MAP, vim_search_identifier,         (Ctl|Sft|KeyCode_8));
 	VimBind(N|MAP, vim_search_identifier,             (Sft|KeyCode_8));
 	VimBind(N|MAP, vim_clear_search,          SUB_Leader,  KeyCode_Space);
@@ -172,12 +172,12 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|MAP, vim_to_prev_pattern,               (Sft|KeyCode_N));
 	VimBind(N|MAP, vim_in_next_pattern,        SUB_G,      KeyCode_N);
 	VimBind(N|MAP, vim_in_prev_pattern,        SUB_G, (Sft|KeyCode_N));
-
+  
 	VimBind(N|MAP, vim_prev_jump,                     (Ctl|KeyCode_O));
 	VimBind(N|MAP, vim_next_jump,                     (Ctl|KeyCode_I));
 	VimBind(N|MAP, vim_next_jump,                     (Sft|KeyCode_I));
 	VimBind(N|MAP, vim_next_jump,                 (Ctl|Sft|KeyCode_I));
-
+  
 	/// Screen Adjust Binds
 	VimBind(N|V|MAP, vim_half_page_up,                (Ctl|KeyCode_U));
 	VimBind(N|V|MAP, vim_half_page_down,              (Ctl|KeyCode_D));
@@ -188,21 +188,21 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|V|MAP, vim_scroll_screen_top,         SUB_Z, KeyCode_T);
 	VimBind(N|V|MAP, vim_scroll_screen_mid,         SUB_Z, KeyCode_Z);
 	VimBind(N|V|MAP, vim_scroll_screen_bot,         SUB_Z, KeyCode_B);
-
+  
 	/// Miscellaneous Binds
 	VimBind(N|V|MAP, vim_set_mark,                         KeyCode_M);
 	VimBind(N|V|MAP, vim_goto_mark,                        KeyCode_Tick);
 	VimBind(N|V|MAP, vim_goto_mark,                        KeyCode_Quote);
 	VimBind(N|V|MAP, vim_toggle_macro,                     KeyCode_Q);
 	VimBind(N|V|MAP, vim_play_macro,                  (Sft|KeyCode_2));
-
+  
 	/// Window Binds (TODO(BYP): Do the rest of these, and do them properly)
 	VimBind(N|MAP, change_active_panel_backwards,     (Ctl|KeyCode_H));
 	VimBind(N|MAP, change_active_panel_backwards,     (Ctl|KeyCode_J));
 	VimBind(N|MAP, change_active_panel,               (Ctl|KeyCode_K));
 	VimBind(N|MAP, change_active_panel,               (Ctl|KeyCode_L));
-
-
+  
+  
 #undef I
 #undef N
 #undef V
