@@ -10,10 +10,10 @@ function void vim_map_set_binding(u32 mode, u32 sub_mode, void *func, u64 key){
 	if(mode & bit_3){ table_insert(vim_maps + 2 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
 }
 function void VimBind(u32 mode, Custom_Command_Function *custom, Vim_Sub_Mode sub_mode, u64 key){
-	vim_map_set_binding(mode, sub_mode, custom, key);
+	vim_map_set_binding(mode, sub_mode, (void *)custom, key);
 }
 function void VimBind(u32 mode, Custom_Command_Function *custom, u64 key){
-	vim_map_set_binding(mode, SUB_None, custom, key);
+	vim_map_set_binding(mode, SUB_None, (void *)custom, key);
 }
 
 
@@ -144,7 +144,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|V|MAP, vim_backward_end,         SUB_G,      KeyCode_E);
 	VimBind(N|V|MAP, vim_backward_END,         SUB_G, (Sft|KeyCode_E));
 
-	VimBind(N|V|MAP, vim_file_top,                  SUB_G, KeyCode_G);
+	VimBind(N|V|MAP, vim_file_top,             SUB_G,     KeyCode_G);
 	VimBind(N|V|MAP, vim_goto_line,                   (Sft|KeyCode_G));
 	VimBind(N|V|MAP, vim_goto_column,                 (Sft|KeyCode_BackwardSlash));
 	VimBind(N|V|MAP, vim_modal_percent,               (Sft|KeyCode_5));
@@ -176,7 +176,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|MAP, vim_prev_jump,                     (Ctl|KeyCode_O));
 	VimBind(N|MAP, vim_next_jump,                     (Ctl|KeyCode_I));
 	VimBind(N|MAP, vim_next_jump,                     (Sft|KeyCode_I));
-	VimBind(N|MAP, vim_next_jump,                 (Ctl|Sft|KeyCode_I));
+	//VimBind(N|MAP, vim_next_jump,                 (Ctl|Sft|KeyCode_I));
 
 	/// Screen Adjust Binds
 	VimBind(N|V|MAP, vim_half_page_up,                (Ctl|KeyCode_U));

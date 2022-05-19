@@ -58,7 +58,7 @@ vim_start_search_inner(Application_Links *app, Scan_Direction start_direction){
 
 	/// TODO(BYP): Need a better system to have multiple types of these drawing
 	vim_use_bottom_cursor = true;
-	String_Const_u8 prefix = SCu8(start_direction == Scan_Forward ? "/" : "?");
+	String_Const_u8 prefix = (start_direction == Scan_Forward ? string_u8_litexpr("/") : string_u8_litexpr("?"));
 	vim_set_bottom_text(prefix);
 	u8 *dest = vim_bot_text.str + vim_bot_text.size;
 	u64 base_size, after_size;

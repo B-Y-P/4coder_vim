@@ -108,6 +108,13 @@ vim_init(Application_Links *app){
 	vim_reset_bottom_text();
 	vim_reset_state();
 
+    {
+		default_color_table.arrays[defcolor_vim_filebar_pop]      = default_color_table.arrays[defcolor_mark];
+		default_color_table.arrays[defcolor_vim_chord_text]       = default_color_table.arrays[defcolor_text_default];
+		default_color_table.arrays[defcolor_vim_chord_unresolved] = default_color_table.arrays[defcolor_mark];
+		default_color_table.arrays[defcolor_vim_chord_error]      = default_color_table.arrays[defcolor_special_character];
+	}
+
 #if VIM_USE_REIGSTER_BUFFER
 	Buffer_ID reg_buffer = create_buffer(app, string_u8_litexpr("*registers*"),
 										 BufferCreate_NeverAttachToFile|BufferCreate_AlwaysNew);
