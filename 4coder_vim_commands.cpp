@@ -781,8 +781,6 @@ function void vim_move_selection(Application_Links *app, Scan_Direction directio
 	i64 max_line = get_line_number_from_pos(app, buffer, range.max);
 	i64 line_count = buffer_get_line_count(app, buffer);
 
-	const i64 swap_count = Max(N, max_line - min_line);
-
 	Range_i64 copy_range = range_union(get_line_pos_range(app, buffer, min_line),
 									   get_line_pos_range(app, buffer, max_line));
 	copy_range.max += buffer_get_char(app, buffer, copy_range.max) == '\r';

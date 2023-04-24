@@ -27,6 +27,8 @@ function void vim_scroll_inner(Application_Links *app, f32 ratio){
 	Vim_Motion_Block vim_motion_block(app);
 	vim_state.params.edit_type = EDIT_LineWise;
 
+	// TODO(BYP): Use this instead
+	// get_custom_hook(app, HookID_BufferRegion);
 	Rect_f32 region = view_get_buffer_region(app, view);
 	i64 pos = view_get_cursor_pos(app, view);
 	Buffer_Cursor cursor = view_compute_cursor(app, view, seek_pos(pos));

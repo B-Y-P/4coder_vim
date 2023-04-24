@@ -184,7 +184,9 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|V|MAP, vim_whole_page_up,               (Ctl|KeyCode_B));
 	VimBind(N|V|MAP, vim_whole_page_down,             (Ctl|KeyCode_F));
 	VimBind(N|V|MAP, vim_line_down,               (Ctl|Sft|KeyCode_Y));
+	VimBind(N|V|MAP, vim_line_down,                   (Ctl|KeyCode_Y));
 	VimBind(N|V|MAP, vim_line_up,                 (Ctl|Sft|KeyCode_E));
+	VimBind(N|V|MAP, vim_line_up,                     (Ctl|KeyCode_E));
 	VimBind(N|V|MAP, vim_scroll_screen_top,         SUB_Z, KeyCode_T);
 	VimBind(N|V|MAP, vim_scroll_screen_mid,         SUB_Z, KeyCode_Z);
 	VimBind(N|V|MAP, vim_scroll_screen_bot,         SUB_Z, KeyCode_B);

@@ -347,6 +347,9 @@ vim_handle_input(Application_Links *app, Input_Event *event){
 			Custom_Command_Function *vim_func = (Custom_Command_Function *)IntAsPtr(function_data);
 			if(vim_func){
 				// Pre command stuff
+				View_ID view = get_active_view(app, Access_ReadVisible);
+				Managed_Scope scope = view_get_managed_scope(app, view);
+				default_pre_command(app, scope);
 				vim_pre_keystroke_size = vim_keystroke_text.size;
 				vim_append_keycode(code);
 				vim_state.active_command = vim_func;
@@ -356,6 +359,7 @@ vim_handle_input(Application_Links *app, Input_Event *event){
 				vim_func(app);
 
 				// Post command stuff
+				default_post_command(app, scope);
 				vim_state.active_command = 0;
 
 				result = true;
@@ -381,7 +385,6 @@ vim_handle_input(Application_Links *app, Input_Event *event){
 
 		return result;
 	}
-
 
 	return false;
 }

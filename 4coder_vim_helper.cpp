@@ -6,17 +6,17 @@ CUSTOM_DOC("no op for binding keybinds to resolve without side effect")
 // Blocking call
 function u8 vim_query_user_key(Application_Links *app, String_Const_u8 message){
 	u8 result = 0;
-
+	
 	local_persist u8 vim_bot_temp_buffer[256];
 	u64 size = vim_bot_text.size;
 	block_copy(vim_bot_temp_buffer, vim_bot_text.str, size);
 	vim_set_bottom_text(message);
 	vim_is_querying_user_key = true;
 	vim_state.chord_resolved = false;
-
+	
 	for(;;){
 		User_Input in = get_next_input(app, EventPropertyGroup_Any, EventProperty_Escape);
-		if(in.abort){ break; }
+		if(in.abort){ vim_state.params.request = REQUEST_None; break; }
 		if(in.event.kind == InputEventKind_TextInsert){
 			result = in.event.text.string.str[0];
 			string_append_character(&vim_keystroke_text, result);
@@ -30,7 +30,7 @@ function u8 vim_query_user_key(Application_Links *app, String_Const_u8 message){
 			leave_current_input_unhandled(app);
 		}
 	}
-
+	
 	vim_set_bottom_text(i32(size), (char *)vim_bot_temp_buffer);
 	vim_is_querying_user_key = false;
 	vim_state.chord_resolved = true;
@@ -89,7 +89,7 @@ function void vim_set_prev_visual(Application_Links *app, View_ID view){
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 	Vim_Prev_Visual *prev_visual = scope_attachment(app, scope, vim_buffer_prev_visual, Vim_Prev_Visual);
-
+	
 	if(prev_visual){
 		prev_visual->cursor_pos = view_get_cursor_pos(app, view);
 		prev_visual->mark_pos = view_get_mark_pos(app, view);
@@ -145,7 +145,7 @@ struct Vim_Motion_Block{
 	i64 begin_pos, end_pos;
 	i64 clamp_end = -1;
 	Vim_Edit_Type prev_edit;
-
+	
 	Vim_Motion_Block(Application_Links *a, i64 b) : app(a), begin_pos(b), prev_edit(vim_state.params.edit_type) {}
 	Vim_Motion_Block(Application_Links *a) : app(a), prev_edit(vim_state.params.edit_type) {
 		View_ID view = get_active_view(app, Access_ReadVisible);
@@ -159,13 +159,13 @@ Vim_Motion_Block::~Vim_Motion_Block(){
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	Vim_Params *params = &vim_state.params;
-
+	
 	if(params->edit_type == EDIT_Block){
 		vim_block_edit(app, view, buffer, get_view_range(app, view));
 	}else{
 		end_pos = view_get_cursor_pos(app, view);
 		i64 buffer_size = buffer_get_size(app, buffer);
-
+		
 		i64 range_begin=begin_pos, range_end=end_pos;
 		if(clamp_end > 0){ range_end = Min(range_end, clamp_end); }
 		if(params->clusivity == VIM_Exclusive){
@@ -174,7 +174,7 @@ Vim_Motion_Block::~Vim_Motion_Block(){
 		}
 		Range_i64 range = Ii64(range_begin, range_end);
 		range.max = Min(range.max+1, buffer_size);
-
+		
 		if(params->edit_type == EDIT_LineWise){
 			range = range_union(get_line_range_from_pos(app, buffer, begin_pos),
 								get_line_range_from_pos(app, buffer, end_pos));
@@ -184,22 +184,22 @@ Vim_Motion_Block::~Vim_Motion_Block(){
 			}
 			range.max -= (params->request == REQUEST_Change);
 		}
-
+		
 		vim_request_vtable[params->request](app, view, buffer, range);
 	}
-
+	
 	if(params->request == REQUEST_Yank || (params->request != REQUEST_None && clamp_end > 0)){
 		Vec2_f32 v0 = view_relative_xy_of_pos(app, view, 0, begin_pos);
 		Vec2_f32 v1 = view_relative_xy_of_pos(app, view, 0, end_pos);
 		vim_nxt_cursor_pos += 2.f*(v1 - v0);
 		view_set_cursor_and_preferred_x(app, view, seek_pos(end_pos = begin_pos));
 	}
-
+	
 	if(params->request != REQUEST_None && vim_state.mode != VIM_Visual){
 		vim_state.params.command = vim_state.active_command;
 		vim_state.prev_params = vim_state.params;
 	}
-
+	
 	Vim_Seek_Params seek = vim_state.params.seek;
 	vim_state.params = {};
 	vim_state.params.seek = seek;
@@ -207,7 +207,7 @@ Vim_Motion_Block::~Vim_Motion_Block(){
 		vim_state.params.selected_reg->flags &= (~REGISTER_Append);
 	}
 	vim_default_register();
-
+	
 	vim_state.sub_mode = SUB_None;
 	if(vim_state.mode != VIM_Insert && vim_state.mode != VIM_Visual){
 		vim_clamp_newline(app, view, buffer, end_pos);
@@ -219,10 +219,10 @@ function void
 vim_visual_insert_inner(Application_Links *app, View_ID view, Buffer_ID buffer){
 	auto_indent_range(app);
 	vim_set_prev_visual(app, view);
-
+	
 	vim_visual_insert_after = false;
 	vim_history_group = history_group_begin(app, buffer);
-
+	
 	// NOTE: For Visual Block multi-line responsiveness, temporarily turn off virtual whitespace and line wrapping
 	Managed_Scope scope = buffer_get_managed_scope(app, buffer);
 	b32 *wrap_lines_ptr = scope_attachment(app, scope, buffer_wrap_lines, b32);
@@ -234,7 +234,7 @@ vim_visual_insert_inner(Application_Links *app, View_ID view, Buffer_ID buffer){
 		toggle_virtual_whitespace(app);
 		vim_visual_insert_flags |= bit_2;
 	}
-
+	
 	//vim_enter_insert_mode(app);
 	vim_state.mode = VIM_Visual_Insert;
 }
@@ -293,10 +293,10 @@ vim_make_request(Application_Links *app, Vim_Request_Type request){
 function void vim_page_scroll_inner(Application_Links *app, f32 ratio){
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	vim_push_jump(app, view);
-
+	
 	f32 scroll_pixels = ratio*get_page_jump(app, view);
 	move_vertical_pixels(app, scroll_pixels);
-
+	
 	Buffer_Scroll scroll = view_get_buffer_scroll(app, view);
 	scroll.target = view_move_buffer_point(app, view, scroll.target, V2f32(0.f, scroll_pixels));
 	view_set_buffer_scroll(app, view, scroll, SetBufferScroll_SnapCursorIntoView);

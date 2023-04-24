@@ -247,8 +247,10 @@ function Layout_Item_List fold_items(Application_Links *app, Buffer_ID buffer, L
 			Layout_Item_Block *block = list.first;
 			for(;;){
 				for(i32 j=0; j < block->item_count; j++){
-					block->items[j].rect.y0 -= fold->cur_active*line_height;
-					block->items[j].rect.y1 -= fold->cur_active*line_height;
+					block->items[j].rect.x0 -= fold->cur_active*line_height;
+					block->items[j].rect.x1 -= fold->cur_active*line_height;
+					//block->items[j].rect.y0 -= fold->cur_active*line_height;
+					//block->items[j].rect.y1 -= fold->cur_active*line_height;
 				}
 
 				if(block == list.last || block->next == 0){ break; }
