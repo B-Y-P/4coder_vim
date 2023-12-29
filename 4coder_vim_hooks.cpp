@@ -161,12 +161,15 @@ BUFFER_HOOK_SIG(vim_begin_buffer){
 	return 0;
 }
 
+#define exp_interp(cur, nxt, dt, rate) (cur += (((nxt) - (cur))*(1.f - pow_f32(rate, dt))))
+function f32 pow_f32(f32 x, f32 y){ return(powf(x, y)); }
+
+
 function void
 vim_animate_filebar(Application_Links *app, Frame_Info frame_info){
 #if VIM_DO_ANIMATE
-	f32 diff = vim_nxt_filebar_offset - vim_cur_filebar_offset;
-	if(fabs(diff) > 1.0f){
-		vim_cur_filebar_offset += diff*frame_info.animation_dt*25.0f;
+	exp_interp(vim_cur_filebar_offset, vim_nxt_filebar_offset, frame_info.animation_dt, 1e-14f);
+	if(!near_zero(vim_cur_filebar_offset - vim_nxt_filebar_offset, 0.5f)){
 		animate_in_n_milliseconds(app, 0);
 	}else{
 		vim_cur_filebar_offset = vim_nxt_filebar_offset;
@@ -180,18 +183,11 @@ vim_animate_filebar(Application_Links *app, Frame_Info frame_info){
 function void
 vim_animate_cursor(Application_Links *app, Frame_Info frame_info){
 #if VIM_DO_ANIMATE
-	Vec2_f32 diff = vim_nxt_cursor_pos - vim_cur_cursor_pos;
-	if(fabs(diff.x) > 1.f){
-		vim_cur_cursor_pos.x += diff.x*frame_info.animation_dt*30.f;
+	exp_interp(vim_cur_cursor_pos, vim_nxt_cursor_pos, frame_info.animation_dt, 1e-14f);
+	if(!near_zero(vim_cur_cursor_pos - vim_nxt_cursor_pos, 0.5f)){
 		animate_in_n_milliseconds(app, 0);
 	}else{
-		vim_cur_cursor_pos.x = vim_nxt_cursor_pos.x;
-	}
-	if(fabs(diff.y) > 1.f){
-		vim_cur_cursor_pos.y += diff.y*frame_info.animation_dt*30.f;
-		animate_in_n_milliseconds(app, 0);
-	}else{
-		vim_cur_cursor_pos.y = vim_nxt_cursor_pos.y;
+		vim_cur_cursor_pos = vim_nxt_cursor_pos;
 	}
 #else
 	vim_cur_cursor_pos = vim_nxt_cursor_pos;
