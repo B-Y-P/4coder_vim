@@ -417,8 +417,14 @@ CUSTOM_DOC("Opens an interactive lists of the views jumps")
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	Managed_Scope scope = view_get_managed_scope(app, view);
 	Vim_Jump_List *jump_list = scope_attachment(app, scope, vim_view_jumps, Vim_Jump_List);
-	for(i32 i=jump_list->index; i != jump_list->bot; i=ArrayDec(jump_list->markers, i)){
-		Point_Stack_Slot *slot = jump_list->markers + i;
+	if(jump_list == NULL){ return; }
+	vim_push_jump(app, view);
+	u64 slot_cap = ArrayCount(jump_list->markers);
+	u64 slot_count = jump_list->pos - jump_list->bot;
+	for(u64 i=0; i<slot_count; i++){
+		u64 pos = jump_list->pos - i;
+		i64 idx = (pos % slot_cap);
+		Point_Stack_Slot *slot = jump_list->markers + idx;
 		i64 line = get_line_number_from_pos(app, slot->buffer, i64(slot->object));
 
 		String_Const_u8 line_text = push_buffer_line(app, scratch, slot->buffer, line);
@@ -430,11 +436,13 @@ CUSTOM_DOC("Opens an interactive lists of the views jumps")
 		line_text.size = Min(line_text.size, 20);
 		String_Const_u8 unique_name = push_buffer_unique_name(app, scratch, slot->buffer);
 		String_Const_u8 text = push_stringf(scratch, "[%.*s]:(%d)", string_expand(unique_name), line);
-		lister_add_item(lister, text, line_text, IntAsPtr(i), 0);
+		lister_add_item(lister, text, line_text, IntAsPtr(idx), 0);
 	}
 	Lister_Result l_result = vim_run_lister(app, lister);
-	i32 index = (!l_result.canceled ? i32(PtrAsInt(l_result.user_data)) : jump_list->index);
-	vim_set_jump(app, view, jump_list, index);
+	u64 pos = (!l_result.canceled ? u64(PtrAsInt(l_result.user_data)) : jump_list->pos);
+	vim_set_jump(app, view, jump_list, pos);
+	jump_list->pos -= (jump_list->pos == jump_list->top);
+	jump_list->top -= 1;
 }
 
 

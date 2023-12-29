@@ -378,9 +378,9 @@ VIM_COMMAND_SIG(vim_scroll_screen_top){ vim_scroll_inner(app,  0.0f); }
 VIM_COMMAND_SIG(vim_scroll_screen_mid){ vim_scroll_inner(app, -0.5f); }
 VIM_COMMAND_SIG(vim_scroll_screen_bot){ vim_scroll_inner(app, -1.0f); }
 
-VIM_COMMAND_SIG(vim_screen_top){ vim_screen_inner(app, 0.0f,  vim_consume_number()); }
-VIM_COMMAND_SIG(vim_screen_mid){ vim_screen_inner(app, 0.5f,  vim_consume_number()); }
-VIM_COMMAND_SIG(vim_screen_bot){ vim_screen_inner(app, 1.0f, -vim_consume_number()); }
+VIM_COMMAND_SIG(vim_screen_top){ vim_screen_inner(app, 0.0f, +1*vim_consume_number()); }
+VIM_COMMAND_SIG(vim_screen_mid){ vim_screen_inner(app, 0.5f, +0*vim_consume_number()); }
+VIM_COMMAND_SIG(vim_screen_bot){ vim_screen_inner(app, 1.0f, -1*vim_consume_number()); }
 
 VIM_COMMAND_SIG(vim_line_up){
 	View_ID view = get_active_view(app, Access_ReadVisible);

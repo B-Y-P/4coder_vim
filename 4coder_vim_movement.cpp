@@ -23,21 +23,16 @@ VIM_COMMAND_SIG(vim_end_line){
 
 function void vim_scroll_inner(Application_Links *app, f32 ratio){
 	View_ID view = get_active_view(app, Access_ReadVisible);
-	vim_push_jump(app, view);
-	Vim_Motion_Block vim_motion_block(app);
-	vim_state.params.edit_type = EDIT_LineWise;
-
-	// TODO(BYP): Use this instead
-	// get_custom_hook(app, HookID_BufferRegion);
 	Rect_f32 region = view_get_buffer_region(app, view);
+	f32 view_height = rect_height(region);
+	f32 line_height = get_view_line_height(app, view);
+
 	i64 pos = view_get_cursor_pos(app, view);
 	Buffer_Cursor cursor = view_compute_cursor(app, view, seek_pos(pos));
-	f32 view_height = rect_height(region);
 	Buffer_Scroll scroll = view_get_buffer_scroll(app, view);
 	scroll.target.line_number = cursor.line;
-	scroll.target.pixel_shift.y = ratio*view_height;
+	scroll.target.pixel_shift.y = ratio*(view_height - line_height);
 	view_set_buffer_scroll(app, view, scroll, SetBufferScroll_SnapCursorIntoView);
-	no_mark_snap_to_cursor(app, view);
 }
 
 VIM_COMMAND_SIG(vim_file_top){
@@ -89,22 +84,14 @@ VIM_COMMAND_SIG(vim_percent_file){
 function void vim_screen_inner(Application_Links *app, f32 ratio, i32 offset){
 	Vim_Motion_Block vim_motion_block(app);
 	View_ID view = get_active_view(app, Access_ReadVisible);
-	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	vim_push_jump(app, view);
 	vim_state.params.edit_type = EDIT_LineWise;
-	Buffer_Point buffer_point = view_get_buffer_scroll(app, view).position;
 
-	// NOTE(BYP): Not good to rely on this call
 	Rect_f32 region = view_get_buffer_region(app, view);
-	Text_Layout_ID text_layout_id = text_layout_create(app, buffer, region, buffer_point);
-	Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
-
-	i64 pos = i64(ratio*(range_size(visible_range))) + visible_range.min;
-	Buffer_Cursor cursor = view_compute_cursor(app, view, seek_pos(pos));
+	i64 new_pos = view_pos_from_xy(app, view, V2f32(0.f, ratio*rect_height(region)));
+	Buffer_Cursor cursor = view_compute_cursor(app, view, seek_pos(new_pos));
 	cursor = view_compute_cursor(app, view, seek_line_col(cursor.line + offset, 0));
 	view_set_cursor_and_preferred_x(app, view, seek_pos(cursor.pos));
-
-	text_layout_free(app, text_layout_id);
 }
 
 

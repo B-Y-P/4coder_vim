@@ -101,29 +101,53 @@ function void vim_push_jump(Application_Links *app, View_ID view){
 	Managed_Scope scope = view_get_managed_scope(app, view);
 	Vim_Jump_List *jump_list = scope_attachment(app, scope, vim_view_jumps, Vim_Jump_List);
 	if(jump_list){
-		jump_list->index = jump_list->top = ArrayInc(jump_list->markers, jump_list->index);
-		if(jump_list->index == jump_list->bot){ jump_list->bot++; }
-		Point_Stack_Slot *slot = &jump_list->markers[jump_list->index];
+		u64 slot_cap = ArrayCount(jump_list->markers);
+		u64 slot_count = jump_list->top - jump_list->bot;
+
+		Point_Stack_Slot *slot = &jump_list->markers[jump_list->pos % slot_cap];
 		slot->buffer = view_get_buffer(app, view, Access_ReadVisible);
 		slot->object = view_get_cursor_pos(app, view);
+
+		jump_list->bot += (slot_count == slot_cap);
+		jump_list->pos += 1;
+		jump_list->top = jump_list->pos;
+		if(jump_list->bot > slot_cap){
+			jump_list->bot -= slot_cap;
+			jump_list->pos -= slot_cap;
+			jump_list->top -= slot_cap;
+		}
 	}
 }
 
-function void vim_set_jump(Application_Links *app, View_ID view, Vim_Jump_List *jump_list, i32 index){
-	jump_list->index = index;
-	Point_Stack_Slot *slot = &jump_list->markers[index];
-	view_set_buffer(app, view, slot->buffer, 0);
+function void vim_set_jump(Application_Links *app, View_ID view, Vim_Jump_List *jump_list, u64 pos){
+	jump_list->pos = pos;
+	Point_Stack_Slot *slot = &jump_list->markers[pos % ArrayCount(jump_list->markers)];
+	bool recenter = false;
+	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+	if(slot->buffer != buffer){
+		view_set_buffer(app, view, slot->buffer, 0);
+		recenter = true;
+	}else{
+		Buffer_Point buffer_point = view_get_buffer_scroll(app, view).position;
+		Rect_f32 region = view_get_buffer_region(app, view);
+		Text_Layout_ID text_layout_id = text_layout_create(app, buffer, region, buffer_point);
+		Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+		text_layout_free(app, text_layout_id);
+		recenter = !range_contains(visible_range, slot->object);
+	}
 	view_set_cursor_and_preferred_x(app, view, seek_pos(slot->object));
-	center_view(app);
+
+	if(recenter){ center_view(app); }
 }
 
 function void vim_dec_jump(Application_Links *app, View_ID view){
 	Managed_Scope scope = view_get_managed_scope(app, view);
 	Vim_Jump_List *jump_list = scope_attachment(app, scope, vim_view_jumps, Vim_Jump_List);
 	if(jump_list){
-		if(jump_list->index == jump_list->bot){ return; }
-		vim_set_jump(app, view, jump_list, jump_list->index);
-		jump_list->index = ArrayDec(jump_list->markers, jump_list->index);
+		u64 next_pos = jump_list->pos - 1;
+		if(jump_list->pos == jump_list->bot){ return; }
+		if(jump_list->pos == jump_list->top){ vim_push_jump(app, view); }
+		vim_set_jump(app, view, jump_list, next_pos);
 	}
 }
 
@@ -131,8 +155,9 @@ function void vim_inc_jump(Application_Links *app, View_ID view){
 	Managed_Scope scope = view_get_managed_scope(app, view);
 	Vim_Jump_List *jump_list = scope_attachment(app, scope, vim_view_jumps, Vim_Jump_List);
 	if(jump_list){
-		if(jump_list->index == jump_list->top){ return; }
-		vim_set_jump(app, view, jump_list, ArrayInc(jump_list->markers, jump_list->index));
+		if(jump_list->pos == jump_list->top){ return; }
+		vim_set_jump(app, view, jump_list, jump_list->pos+1);
+		jump_list->top -= (jump_list->pos == jump_list->top-1);
 	}
 }
 
@@ -293,11 +318,11 @@ vim_make_request(Application_Links *app, Vim_Request_Type request){
 function void vim_page_scroll_inner(Application_Links *app, f32 ratio){
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	vim_push_jump(app, view);
-	
+
 	f32 scroll_pixels = ratio*get_page_jump(app, view);
 	move_vertical_pixels(app, scroll_pixels);
-	
+
 	Buffer_Scroll scroll = view_get_buffer_scroll(app, view);
 	scroll.target = view_move_buffer_point(app, view, scroll.target, V2f32(0.f, scroll_pixels));
-	view_set_buffer_scroll(app, view, scroll, SetBufferScroll_SnapCursorIntoView);
+	view_set_buffer_scroll(app, view, scroll, SetBufferScroll_NoCursorChange);
 }

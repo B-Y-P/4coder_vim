@@ -235,10 +235,8 @@ vim_lister_render(Application_Links *app, Frame_Info frame_info, View_ID view){
 	col_num = clamp(lister_range.min, col_num, lister_range.max);
 	
 	i32 max_row_num = 1 + (lister->filtered.count-1)/col_num;
-	i32 row_num;
-	if(lister->filtered.count == 0.f){ row_num = 0; }
-	else{ row_num = Min(i32(max_lister_height/block_height), max_row_num); }
-	
+	i32 row_num = (lister->filtered.count == 0 ? 0 : Min(i32(max_lister_height/block_height), max_row_num));
+
 	lister->visible_count = Min(col_num*row_num, lister->filtered.count);
 	
 	// TODO(BYP) check exactly why row_num+2. Had to update when changing block_height

@@ -162,8 +162,8 @@ struct Vim_Global_Mark{
 };
 
 struct Vim_Jump_List{
-	Point_Stack_Slot markers[POINT_STACK_DEPTH + 1];
-	i32 top, bot, index;
+	Point_Stack_Slot markers[256];
+	u64 bot, top, pos;
 };
 
 
