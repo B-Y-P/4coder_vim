@@ -771,50 +771,41 @@ VIM_COMMAND_SIG(vim_first_4coder_jump){
 function void vim_move_selection(Application_Links *app, Scan_Direction direction){
 	View_ID view = get_active_view(app, Access_ReadWriteVisible);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
-
-	Scratch_Block scratch(app);
-	const i64 N = vim_consume_number();
-	const b32 forward = direction == Scan_Forward;
+	i64 max_line = buffer_get_line_count(app, buffer);
+	i64 max_pos = buffer_get_size(app, buffer);
+	i64 N = vim_consume_number();
+	b32 forward = direction == Scan_Forward;
 
 	i64 cursor_pos = view_get_cursor_pos(app, view);
 	i64 mark_pos = view_get_mark_pos(app, view);
 	Range_i64 range = Ii64(cursor_pos, mark_pos);
-	i64 min_line = get_line_number_from_pos(app, buffer, range.min);
-	i64 max_line = get_line_number_from_pos(app, buffer, range.max);
-	i64 line_count = buffer_get_line_count(app, buffer);
+	i64 line0 = get_line_number_from_pos(app, buffer, range.min);
+	i64 line1 = get_line_number_from_pos(app, buffer, range.max);
+	if(!forward ? line0 <= 1 : max_line <= line1){ return; }
 
-	Range_i64 copy_range = range_union(get_line_pos_range(app, buffer, min_line),
-									   get_line_pos_range(app, buffer, max_line));
+	Range_i64 copy_range = range_union(get_line_pos_range(app, buffer, line0),
+									   get_line_pos_range(app, buffer, line1));
 	copy_range.max += buffer_get_char(app, buffer, copy_range.max) == '\r';
 	copy_range.max += 1;
 
 	i64 paste_pos = (forward ?
-					 get_line_pos_range(app, buffer, Min(max_line + N, line_count)).max + 1 :
-					 get_line_pos_range(app, buffer, min_line - N).min);
-	i64 buff_size = buffer_get_size(app, buffer);
-	paste_pos = Min(paste_pos, buff_size);
+					 get_line_pos_range(app, buffer, line1 + N).max + 1 :
+					 get_line_pos_range(app, buffer, line0 - N).min);
+	paste_pos = Min(paste_pos, max_pos);
 
+	Scratch_Block scratch(app);
 	String_Const_u8 copy_string = push_buffer_range(app, scratch, buffer, copy_range);
-
-	i64 cursor_offset = cursor_pos - copy_range.min;
-	i64 mark_offset = mark_pos - copy_range.min;
-
 	History_Group group = history_group_begin(app, buffer);
 	if(forward){
 		buffer_replace_range(app, buffer, Ii64(paste_pos), copy_string);
-
-		view_set_cursor(app, view, seek_pos(paste_pos + cursor_offset));
-		view_set_mark(app, view, seek_pos(paste_pos + mark_offset));
-
 		buffer_replace_range(app, buffer, copy_range, string_u8_empty);
 	}else{
 		buffer_replace_range(app, buffer, copy_range, string_u8_empty);
 		buffer_replace_range(app, buffer, Ii64(paste_pos), copy_string);
-
-		view_set_cursor(app, view, seek_pos(paste_pos + cursor_offset));
-		view_set_mark(app, view, seek_pos(paste_pos + mark_offset));
 	}
-
+	i64 offset = paste_pos - (forward ? copy_range.max : copy_range.min);
+	view_set_cursor(app, view, seek_pos(cursor_pos + offset));
+	view_set_mark(app, view, seek_pos(mark_pos + offset));
 	history_group_end(group);
 }
 
