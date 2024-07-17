@@ -47,42 +47,35 @@ vim_lister_file__backspace(Application_Links *app){
 	View_ID view = get_this_ctx_view(app, Access_Always);
 	Lister *lister = view_get_lister(app, view);
 	if(lister){
+		String_Const_u8 string = lister->text_field.string;
 		User_Input input = get_current_input(app);
 		if(has_modifier(&input, KeyCode_Control)){
 			if(has_modifier(&input, KeyCode_Shift)){
-				lister->text_field.size = 0;
-				while(!character_is_slash(lister->text_field.str[++lister->text_field.size])){}
-				++lister->text_field.size;
-				String_u8 temp = lister->text_field;
-				
-				set_hot_directory(app, temp.string);
+				string.size = string_find_first_slash(string)+1;
+				lister->text_field.string = string;
+				set_hot_directory(app, string);
 				lister_call_refresh_handler(app, lister);
-				lister->text_field = temp;
 			}else{
-				String_Const_u8 string = lister->text_field.string;
-				if(character_is_slash(string.str[string.size-1])){
-					string.size--;
-					i64 slash_index = string_find_last_slash(string);
-					if(slash_index >= 0){
-						string.size = slash_index+1;
-						lister->text_field.string = string;
-						set_hot_directory(app, string);
-						String_u8 temp = lister->text_field;
-						lister_call_refresh_handler(app, lister);
-						lister->text_field = temp;
-					}
+				if(string_looks_like_drive_letter(string)){
+					// no-op...
+				}else if(character_is_slash(string.str[string.size-1])){
+					string = string_remove_last_folder(string);
+					lister->text_field.string = string;
+					set_hot_directory(app, string);
+					lister_call_refresh_handler(app, lister);
 				}else{
-					lister->text_field.string = ctrl_backspace_utf8(lister->text_field.string);
+					string.size++;  // quirk with how I wrote ctrl_backspace_utf8
+					lister->text_field.string = ctrl_backspace_utf8(string);
 				}
 			}
 		}else{
-			lister->text_field.string = backspace_utf8(lister->text_field.string);
+			lister->text_field.string = backspace_utf8(string);
 		}
-		
+
 		String_Const_u8 text_field = lister->text_field.string;
 		String_Const_u8 new_key = string_front_of_path(text_field);
 		lister_set_key(lister, new_key);
-		
+
 		lister->item_index = 0;
 		lister_zero_scroll(lister);
 		lister_update_filtered_list(app, lister);
