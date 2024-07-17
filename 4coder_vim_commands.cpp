@@ -92,9 +92,11 @@ VIM_COMMAND_SIG(vim_normal_mode){
 		View_ID view = get_active_view(app, Access_ReadVisible);
 		Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 		const i32 N = Max(0,vim_state.params.number-1);
+		History_Group h = history_group_begin(app, buffer);
 		foreach(i, N){
 			vim_paste(app, view, buffer, &vim_registers.insert);
 		}
+		if(N){ h.first--; history_group_end(h); }
 		move_horizontal_lines(app, -1);
 	}
 	if(vim_state.mode == VIM_Visual){

@@ -163,13 +163,13 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(V|MAP,   cursor_mark_swap,                     KeyCode_O);
 	VimBind(V|MAP,   vim_block_swap,                  (Sft|KeyCode_O));
 
-	VimBind(N|MAP, vim_search_identifier,         (Ctl|Sft|KeyCode_8));
-	VimBind(N|MAP, vim_search_identifier,             (Sft|KeyCode_8));
-	VimBind(N|MAP, vim_clear_search,          SUB_Leader,  KeyCode_Space);
-	VimBind(N|MAP, vim_start_search_forward,               KeyCode_ForwardSlash);
-	VimBind(N|MAP, vim_start_search_backward,         (Sft|KeyCode_ForwardSlash));
-	VimBind(N|MAP, vim_to_next_pattern,                    KeyCode_N);
-	VimBind(N|MAP, vim_to_prev_pattern,               (Sft|KeyCode_N));
+	VimBind(N|V|MAP, vim_search_identifier,         (Ctl|Sft|KeyCode_8));
+	VimBind(N|V|MAP, vim_search_identifier,             (Sft|KeyCode_8));
+	VimBind(N|V|MAP, vim_clear_search,          SUB_Leader,  KeyCode_Space);
+	VimBind(N|V|MAP, vim_start_search_forward,               KeyCode_ForwardSlash);
+	VimBind(N|V|MAP, vim_start_search_backward,         (Sft|KeyCode_ForwardSlash));
+	VimBind(N|V|MAP, vim_to_next_pattern,                    KeyCode_N);
+	VimBind(N|V|MAP, vim_to_prev_pattern,               (Sft|KeyCode_N));
 	VimBind(N|MAP, vim_in_next_pattern,        SUB_G,      KeyCode_N);
 	VimBind(N|MAP, vim_in_prev_pattern,        SUB_G, (Sft|KeyCode_N));
 
