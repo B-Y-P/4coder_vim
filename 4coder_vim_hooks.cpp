@@ -161,9 +161,7 @@ BUFFER_HOOK_SIG(vim_begin_buffer){
 	return 0;
 }
 
-#define exp_interp(cur, nxt, dt, rate) (cur += (((nxt) - (cur))*(1.f - pow_f32(rate, dt))))
-function f32 pow_f32(f32 x, f32 y){ return(powf(x, y)); }
-
+#define exp_interp(cur, nxt, dt, rate) (cur += (((nxt) - (cur))*(1.f - powf(rate, dt))))
 
 function void
 vim_animate_filebar(Application_Links *app, Frame_Info frame_info){
