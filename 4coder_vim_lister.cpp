@@ -172,7 +172,7 @@ calc_col_row(Application_Links *app, Lister *lister){
 	Face_ID face_id = get_face_id(app, 0);
 	Face_Metrics metrics = get_face_metrics(app, face_id);
 	f32 line_height = metrics.line_height;
-	f32 max_advance = metrics.max_advance;
+	f32 space_advance = metrics.space_advance;
 	f32 block_height = vim_lister_get_block_height(line_height);
 	f32 max_lister_height = dim.y*VIM_LISTER_MAX_RATIO - 2.f*line_height;
 	
@@ -184,8 +184,8 @@ calc_col_row(Application_Links *app, Lister *lister){
 			max_name_size = lister->filtered.node_ptrs[i]->string.size;
 		}
 	}
-	
-	i32 col_num = i32(dim.x/((max_name_size+7)*max_advance));
+
+	i32 col_num = i32(dim.x/((max_name_size+7)*space_advance));
 	col_num = clamp(lister_range.min, col_num, lister_range.max);
 	
 	i32 max_row_num = 1 + lister->filtered.count/col_num;
@@ -210,7 +210,7 @@ vim_lister_render(Application_Links *app, Frame_Info frame_info, View_ID view){
 	Face_ID face_id = get_face_id(app, 0);
 	Face_Metrics metrics = get_face_metrics(app, face_id);
 	f32 line_height = metrics.line_height;
-	f32 max_advance = metrics.max_advance;
+	f32 space_advance = metrics.space_advance;
 	f32 block_height = vim_lister_get_block_height(line_height);
 	f32 max_lister_height = rect_height(region)*VIM_LISTER_MAX_RATIO - 2.f*line_height;
 	
@@ -222,9 +222,9 @@ vim_lister_render(Application_Links *app, Frame_Info frame_info, View_ID view){
 			max_name_size = lister->filtered.node_ptrs[i]->string.size;
 		}
 	}
-	
-	i32 col_num = i32(rect_width(region)/((max_name_size+7)*max_advance));
-	//i32 col_num = i32(rect_width(region)/((max_name_size)*max_advance));
+
+	i32 col_num = i32(rect_width(region)/((max_name_size+7)*space_advance));
+	//i32 col_num = i32(rect_width(region)/((max_name_size)*space_advance));
 	col_num = clamp(lister_range.min, col_num, lister_range.max);
 	
 	i32 max_row_num = 1 + (lister->filtered.count-1)/col_num;
