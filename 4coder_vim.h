@@ -28,9 +28,9 @@ global b32 vim_do_full_line = false;
 global b32 vim_relative_numbers = true;
 global b32 vim_show_block_helper = true;
 
-#define ACTIVE_BLINK(b) (!(((b) / 20) & 0x1))
+#define ACTIVE_BLINK(b) (sin_f32(5.f*b) >= 0.f || (b) > 10.f)
 global b32 vim_use_bottom_cursor;
-global u64 vim_cursor_blink;
+global f32 vim_cursor_blink;
 global Vec2_f32 vim_nxt_cursor_pos;
 global Vec2_f32 vim_cur_cursor_pos;
 

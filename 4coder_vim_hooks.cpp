@@ -209,7 +209,7 @@ vim_tick(Application_Links *app, Frame_Info frame_info){
 	vim_animate_filebar(app, frame_info);
 	vim_animate_cursor(app, frame_info);
 #if VIM_DO_ANIMATE
-	vim_cursor_blink++;
+	vim_cursor_blink += frame_info.animation_dt;
 #endif
 
 	fold_tick(app, frame_info);
