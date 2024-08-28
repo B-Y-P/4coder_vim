@@ -1,13 +1,18 @@
 
 // TODO(BYP): Might want meta-data on these, for now I prefer the simplicity
+function void vim_overwrite(Table_u64_u64 *table, u64 key, u64 val){
+	table_erase(table, key);
+	table_insert(table, key, val);
+}
+
 function void vim_map_set_binding(u32 mode, u32 sub_mode, void *func, u64 key){
 	if((mode & bitmask_3) == 0){
 		mode |= bitmask_3;
 		foreach(s,VIM_SUBMODE_COUNT){ vim_map_set_binding(mode, s, func, key); }
 	}
-	if(mode & bit_1){ table_insert(vim_maps + 0 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
-	if(mode & bit_2){ table_insert(vim_maps + 1 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
-	if(mode & bit_3){ table_insert(vim_maps + 2 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
+	if(mode & bit_1){ vim_overwrite(vim_maps + 0 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
+	if(mode & bit_2){ vim_overwrite(vim_maps + 1 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
+	if(mode & bit_3){ vim_overwrite(vim_maps + 2 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
 }
 function void VimBind(u32 mode, Custom_Command_Function *custom, Vim_Sub_Mode sub_mode, u64 key){
 	vim_map_set_binding(mode, sub_mode, (void *)custom, key);
@@ -175,8 +180,6 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 
 	VimBind(N|MAP, vim_prev_jump,                     (Ctl|KeyCode_O));
 	VimBind(N|MAP, vim_next_jump,                     (Ctl|KeyCode_I));
-	VimBind(N|MAP, vim_next_jump,                     (Sft|KeyCode_I));
-	//VimBind(N|MAP, vim_next_jump,                 (Ctl|Sft|KeyCode_I));
 
 	/// Screen Adjust Binds
 	VimBind(N|V|MAP, vim_half_page_up,                (Ctl|KeyCode_U));
