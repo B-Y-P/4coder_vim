@@ -81,6 +81,39 @@ VIM_COMMAND_SIG(vim_percent_file){
 	view_set_cursor_and_preferred_x(app, view, seek_line_col(target_line, 0));;
 }
 
+VIM_COMMAND_SIG(vim_if_read_only_goto_position)
+{
+    View_ID view = get_active_view(app, Access_ReadVisible);
+    Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
+    if (buffer == 0){
+		buffer = view_get_buffer(app, view, Access_ReadVisible);
+		if (buffer != 0){
+			vim_push_jump(app, view);
+			goto_jump_at_cursor(app);
+			lock_jump_buffer(app, buffer);
+		}
+    }
+    else{
+		leave_current_input_unhandled(app);
+    }
+}
+
+VIM_COMMAND_SIG(vim_if_read_only_goto_position_same_panel)
+{
+    View_ID view = get_active_view(app, Access_ReadVisible);
+    Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
+    if (buffer == 0){
+		buffer = view_get_buffer(app, view, Access_ReadVisible);
+		if (buffer != 0){
+	    	vim_push_jump(app, view);
+			goto_jump_at_cursor_same_panel(app);
+			lock_jump_buffer(app, buffer);
+		}
+    }
+    else{
+		leave_current_input_unhandled(app);
+    }
+}
 
 function void vim_screen_inner(Application_Links *app, f32 ratio, i32 offset){
 	Vim_Motion_Block vim_motion_block(app);

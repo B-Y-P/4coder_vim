@@ -21,7 +21,7 @@ function void init_keycode_lut(){
     for(i32 i=0; i<12; i++){
         keycode_lut[KeyCode_F1+i] = keycode_lut[KeyCode_F1+i+shift] = function_keys + (3*i + (i>9)*(i-9));
     }
-    
+
     keycode_lut[KeyCode_Space]     = keycode_lut[KeyCode_Space+shift]         = "Sp";
     keycode_lut[KeyCode_Tab]       = keycode_lut[KeyCode_BackwardSlash+shift] = "Tab";
     keycode_lut[KeyCode_Escape]    = keycode_lut[KeyCode_Escape+shift]        = "ESC";
@@ -40,7 +40,7 @@ function void init_keycode_lut(){
     keycode_lut[KeyCode_PageDown]  = keycode_lut[KeyCode_PageDown+shift]      = "PageDown";
     keycode_lut[KeyCode_CapsLock]  = keycode_lut[KeyCode_CapsLock+shift]      = "Caps";
     keycode_lut[KeyCode_NumLock]   = keycode_lut[KeyCode_NumLock+shift]       = "NumLock";
-    
+
     keycode_lut[KeyCode_Tick]          = "`"; keycode_lut[KeyCode_Tick+shift]           = "~";
     keycode_lut[KeyCode_Minus]         = "-"; keycode_lut[KeyCode_Minus+shift]          = "_";
     keycode_lut[KeyCode_Minus]         = "-"; keycode_lut[KeyCode_Minus+shift]          = "_";

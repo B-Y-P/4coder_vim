@@ -59,6 +59,8 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 	VimBind(N|I|MAP, swap_panels,                     (Ctl|KeyCode_2));
 	VimBind(I|MAP, word_complete_drop_down,           (Ctl|KeyCode_N));
 	//VimBind(I|MAP, word_complete_drop_down,           (Ctl|KeyCode_P));
+	VimBind(N|I|MAP, vim_if_read_only_goto_position,                 KeyCode_Return);
+	VimBind(N|I|MAP, vim_if_read_only_goto_position_same_panel, (Sft|KeyCode_Return));
 
 	/// Mode Binds
 	VimBind(N|V|MAP, vim_modal_i,                          KeyCode_I);
