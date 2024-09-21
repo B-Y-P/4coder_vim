@@ -48,6 +48,7 @@ vim_lister_file__backspace(Application_Links *app){
 	Lister *lister = view_get_lister(app, view);
 	if(lister){
 		String_Const_u8 string = lister->text_field.string;
+		b32 is_last_slash = character_is_slash(string.str[string.size-1]);
 		User_Input input = get_current_input(app);
 		if(has_modifier(&input, KeyCode_Control)){
 			if(has_modifier(&input, KeyCode_Shift)){
@@ -58,7 +59,7 @@ vim_lister_file__backspace(Application_Links *app){
 			}else{
 				if(string_looks_like_drive_letter(string)){
 					// no-op...
-				}else if(character_is_slash(string.str[string.size-1])){
+				}else if(is_last_slash){
 					string = string_remove_last_folder(string);
 					lister->text_field.string = string;
 					set_hot_directory(app, string);
@@ -69,7 +70,16 @@ vim_lister_file__backspace(Application_Links *app){
 				}
 			}
 		}else{
-			lister->text_field.string = backspace_utf8(string);
+			if(string_looks_like_drive_letter(string)){
+				lister->text_field.string.size = 0;
+			}else if(is_last_slash){
+				string = backspace_utf8(string);
+				set_hot_directory(app, string);
+				lister_call_refresh_handler(app, lister);
+				lister->text_field.string = string;
+			}else{
+				lister->text_field.string = backspace_utf8(string);
+			}
 		}
 
 		String_Const_u8 text_field = lister->text_field.string;
