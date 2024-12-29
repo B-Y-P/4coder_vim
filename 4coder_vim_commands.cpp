@@ -861,13 +861,22 @@ CUSTOM_COMMAND_SIG(w)
 CUSTOM_DOC("Vim: Saves the buffer") { save(app); }
 
 CUSTOM_COMMAND_SIG(wq)
-CUSTOM_DOC("Vim: Saves and quits the buffer") { save(app); close_panel(app); }
+CUSTOM_DOC("Vim: Saves and quits the buffer") { save(app); q(app); }
 
 CUSTOM_COMMAND_SIG(wqa)
 CUSTOM_DOC("Vim: Saves and quits all buffers") { save_all_dirty_buffers(app); exit_4coder(app); }
 
 CUSTOM_COMMAND_SIG(q)
-CUSTOM_DOC("Vim: Close panel") { close_panel(app); }
+CUSTOM_DOC("Vim: Close panel, exits on closing last panel")
+{
+    View_ID view = get_active_view(app, Access_Always);
+    if (view == get_next_view_looped_primary_panels(app, view, Access_Always)){
+        exit_4coder(app);
+    }
+    else {
+        close_panel(app);
+    }
+}
 
 CUSTOM_COMMAND_SIG(qk)
 CUSTOM_DOC("Vim: Attempt to kill buffer and close panel") { vim_try_buffer_kill(app); close_panel(app); }
