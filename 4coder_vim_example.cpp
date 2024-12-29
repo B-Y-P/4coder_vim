@@ -3,6 +3,7 @@
 
 #include "4coder_vimrc.h"
 #include "4coder_vim_include.h"
+#include "4coder_vim_include.cpp"
 
 #if !defined(META_PASS)
 #include "generated/managed_id_metadata.cpp"
@@ -92,9 +93,9 @@ EXAMPLE_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, 
 
 	switch(fcoder_mode){
 		case FCoderMode_Original:
-		vim_draw_cursor(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness); break;
+            vim_draw_cursor(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness); break;
 		case FCoderMode_NotepadLike:
-		draw_notepad_style_cursor_highlight(app, view_id, buffer, text_layout_id, cursor_roundness); break;
+            draw_notepad_style_cursor_highlight(app, view_id, buffer, text_layout_id, cursor_roundness); break;
 	}
 
 	paint_fade_ranges(app, text_layout_id, buffer);
