@@ -117,10 +117,8 @@ vim_draw_filebar(Application_Links *app, View_ID view_id, Buffer_ID buffer, Fram
   Dirty_State dirty = buffer_get_dirty_state(app, buffer);
   if(dirty != 0){
     string_append(&str, string_u8_litexpr(" ["));
-    if(HasFlag(dirty, DirtyState_UnsavedChanges))
-      string_append(&str, string_u8_litexpr("+"));
-    if(HasFlag(dirty, DirtyState_UnloadedChanges))
-      string_append(&str, string_u8_litexpr("!"));
+    if(HasFlag(dirty, DirtyState_UnsavedChanges))  string_append_character(&str, '+');
+    if(HasFlag(dirty, DirtyState_UnloadedChanges)) string_append_character(&str, '!');
     string_append(&str, string_u8_litexpr("]"));
     draw_string(app, face_id, str.string, p, pop2_color);
   }
@@ -131,17 +129,15 @@ vim_draw_filebar(Application_Links *app, View_ID view_id, Buffer_ID buffer, Fram
   p.x = bar.x0 + 2.f;
   draw_string(app, face_id, unique_name, p, base_color);
 
+  // TODO: vim_state.mode             == VIM_Visual "Selection: %d lines, %d chars"
+  // TODO: vim_state.params.edit_type == EDIT_Block "Selection: %d x %d block, %d chars"
+
   p.x = bar.x1 - char_wid*3.5f;
-  i64 buffer_size = buffer_get_size(app, buffer);
-  String_Const_u8 PosText;
-  if(cursor_position == 0){
-    PosText = string_u8_litexpr("Top");
-  }else if(cursor_position ==  buffer_size){
-    PosText = string_u8_litexpr("Bot");
-  }else{
-    PosText = push_stringf(scratch, "%d%%", i64(100.f*cursor_position/(buffer_size)));
-  }
-  draw_string(app, face_id, PosText, p, base_color);
+  i64 N = buffer_get_size(app, buffer);
+  String_Const_u8 pos_text = (cursor_position == 0 ? string_u8_litexpr("Top") :
+                              cursor_position == N ? string_u8_litexpr("Bot") :
+                              push_stringf(scratch, "%d%%", i64(100.f*cursor_position/(N))));
+  draw_string(app, face_id, pos_text, p, base_color);
 }
 
 function void

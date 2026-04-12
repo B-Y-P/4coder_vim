@@ -17,153 +17,153 @@ typedef Range_i64 Vim_Text_Object_Func(Application_Links *app, Buffer_ID buffer,
 #define VIM_COMMAND_SIG(name) function void name(Application_Links *app)
 
 struct Vim_Text_Object{
-	u8 character;
-	Vim_Text_Object_Func *func;
+  u8 character;
+  Vim_Text_Object_Func *func;
 };
 
 
 enum Vim_Mode{
-	VIM_Normal,
-	VIM_Insert,
-	VIM_Visual,
-	VIM_MODE_COUNT,
-	// These modes just have hard-coded behavior
-	VIM_Visual_Insert,
-	VIM_Replace,
+  VIM_Normal,
+  VIM_Insert,
+  VIM_Visual,
+  VIM_MODE_COUNT,
+  // These modes just have hard-coded behavior
+  VIM_Visual_Insert,
+  VIM_Replace,
 };
 
 enum Vim_Sub_Mode{
-	SUB_None,
-	SUB_G,
-	SUB_Z,
-	SUB_Leader,
-	//SUB_Window,
-	VIM_SUBMODE_COUNT,
+  SUB_None,
+  SUB_G,
+  SUB_Z,
+  SUB_Leader,
+  //SUB_Window,
+  VIM_SUBMODE_COUNT,
 };
 
 typedef u32 Vim_Request_Type;
 enum{
-	REQUEST_None,
-	REQUEST_Yank,
-	REQUEST_Delete,
-	REQUEST_Change,
-	REQUEST_Upper, REQUEST_Lower,
-	REQUEST_ToggleCase,
-	REQUEST_Replace,
-	REQUEST_Indent, REQUEST_Outdent,
-	REQUEST_AutoIndent,
-	REQUEST_Fold,
-	VIM_REQUEST_COUNT
+  REQUEST_None,
+  REQUEST_Yank,
+  REQUEST_Delete,
+  REQUEST_Change,
+  REQUEST_Upper, REQUEST_Lower,
+  REQUEST_ToggleCase,
+  REQUEST_Replace,
+  REQUEST_Indent, REQUEST_Outdent,
+  REQUEST_AutoIndent,
+  REQUEST_Fold,
+  VIM_REQUEST_COUNT
 };
 
 enum Vim_Default_Text_Objects{
-	TEXT_OBJECT_word,
-	TEXT_OBJECT_Word,
-	TEXT_OBJECT_para,
+  TEXT_OBJECT_word,
+  TEXT_OBJECT_Word,
+  TEXT_OBJECT_para,
 
-	VIM_TEXT_OBJECT_COUNT
+  VIM_TEXT_OBJECT_COUNT
 };
 
 enum Vim_Edit_Type{
-	EDIT_CharWise,
-	EDIT_LineWise,
-	EDIT_Block,         // Only use for Visual Block
+  EDIT_CharWise,
+  EDIT_LineWise,
+  EDIT_Block,         // Only use for Visual Block
 };
 
 enum Vim_Clusivity{
-	VIM_Inclusive,
-	VIM_Exclusive,
+  VIM_Inclusive,
+  VIM_Exclusive,
 };
 
 typedef u32 Vim_Register_Flags;
 enum{
-	REGISTER_ReadOnly = bit_1,
-	REGISTER_Append   = bit_2,
-	REGISTER_Set      = bit_3,
-	REGISTER_Updated  = bit_4,
+  REGISTER_ReadOnly = bit_1,
+  REGISTER_Append   = bit_2,
+  REGISTER_Set      = bit_3,
+  REGISTER_Updated  = bit_4,
 };
 
 struct Vim_Register{
-	Vim_Edit_Type edit_type;
-	String_u8 data;
-	Vim_Register_Flags flags;
+  Vim_Edit_Type edit_type;
+  String_u8 data;
+  Vim_Register_Flags flags;
 };
 
 struct Vim_Seek_Params{
-	u8 character;
-	Vim_Clusivity clusivity;
-	Scan_Direction direction;
+  u8 character;
+  Vim_Clusivity clusivity;
+  Scan_Direction direction;
 };
 
 struct Vim_Params{
-	i32 number;
-	i32 count;
-	Vim_Request_Type request;
-	Vim_Edit_Type edit_type;
-	Vim_Clusivity clusivity;
-	Vim_Seek_Params seek;
-	Vim_Register *selected_reg;
-	u8 consume_char;
-	b8 do_insert;
-	Custom_Command_Function *command;
+  i32 number;
+  i32 count;
+  Vim_Request_Type request;
+  Vim_Edit_Type edit_type;
+  Vim_Clusivity clusivity;
+  Vim_Seek_Params seek;
+  Vim_Register *selected_reg;
+  u8 consume_char;
+  b8 do_insert;
+  Custom_Command_Function *command;
 };
 
 struct Vim_State{
-	Vim_Mode mode;
-	Vim_Sub_Mode sub_mode;
+  Vim_Mode mode;
+  Vim_Sub_Mode sub_mode;
 
-	Arena arena;
-	Heap heap;
-	Base_Allocator alloc;
+  Arena arena;
+  Heap heap;
+  Base_Allocator alloc;
 
-	b8 chord_resolved;
-	u8 macro_char;
-	u8 prev_macro;
+  b8 chord_resolved;
+  u8 macro_char;
+  u8 prev_macro;
 
-	Buffer_Cursor insert_cursor;
-	History_Record_Index insert_index;
+  Buffer_Cursor insert_cursor;
+  History_Record_Index insert_index;
 
-	i32 number;
-	Vim_Params params;
-	Vim_Params prev_params;
-	Custom_Command_Function *active_command;
+  i32 number;
+  Vim_Params params;
+  Vim_Params prev_params;
+  Custom_Command_Function *active_command;
 };
 
 union Vim_Registers{
-	struct{
-		Vim_Register named[26];
-		Vim_Register unnamed;
-		Vim_Register system;
-		Vim_Register expression;
-		Vim_Register search;
-		union{
-			Vim_Register digit[10];
-			struct{
-				Vim_Register yank;
-				Vim_Register cycle[9];
-			};
-		};
-		Vim_Register small_delete;
-		Vim_Register insert;
-		Vim_Register command;
-		Vim_Register file;
-	};
-	Vim_Register r[44];
+  struct{
+    Vim_Register named[26];
+    Vim_Register unnamed;
+    Vim_Register system;
+    Vim_Register expression;
+    Vim_Register search;
+    union{
+      Vim_Register digit[10];
+      struct{
+        Vim_Register yank;
+        Vim_Register cycle[9];
+      };
+    };
+    Vim_Register small_delete;
+    Vim_Register insert;
+    Vim_Register command;
+    Vim_Register file;
+  };
+  Vim_Register r[44];
 };
 
 struct Vim_Prev_Visual{
-	i64 cursor_pos, mark_pos;
-	Vim_Edit_Type edit_type;
+  i64 cursor_pos, mark_pos;
+  Vim_Edit_Type edit_type;
 };
 
 struct Vim_Global_Mark{
-	Buffer_Identifier buffer_id;
-	i64 pos;
+  Buffer_Identifier buffer_id;
+  i64 pos;
 };
 
 struct Vim_Jump_List{
-	Point_Stack_Slot markers[256];
-	u64 bot, top, pos;
+  Point_Stack_Slot markers[256];
+  u64 bot, top, pos;
 };
 
 
