@@ -839,7 +839,8 @@ VIM_COMMAND_SIG(vim_toggle_macro){
 }
 
 VIM_COMMAND_SIG(vim_play_macro){
-  u8 c = vim_query_user_key(app, string_u8_litexpr("-- SELECT MACRO TO PLAY --"));
+  User_Input in = get_current_input(app);
+  u8 c = event_is_dead_key(&in.event) ? '@' : vim_query_user_key(app, string_u8_litexpr("-- SELECT MACRO TO PLAY --"));
   if(c == '@'){ c = vim_state.prev_macro; }
   if(in_range('a', c, 'z'+1) || in_range('A', c, 'Z'+1)){
     i32 index = vim_macro_index(c);
