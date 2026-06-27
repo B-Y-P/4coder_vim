@@ -1,6 +1,7 @@
 
 #include "4coder_vim.h"
 
+#include "4coder_vim_windows.cpp"
 #include "4coder_vim_block.cpp"
 #include "4coder_vim_helper.cpp"
 #include "4coder_vim_registers.cpp"
